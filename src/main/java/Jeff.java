@@ -9,6 +9,28 @@ public class Jeff {
     /** Store of every task the user has added so far, in order. */
     private static final List<Task> history = new ArrayList<>();
 
+    /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
+    private enum Command {
+        BYE("bye"), LIST("list"), MARK("mark"), UNMARK("unmark"), DELETE("delete"),
+        TODO("todo"), DEADLINE("deadline"), EVENT("event"), UNKNOWN("");
+
+        private final String word;
+
+        Command(String word) {
+            this.word = word;
+        }
+
+        /** Looks up the command matching the given (case-sensitive) first word of user input. */
+        static Command fromWord(String word) {
+            for (Command command : values()) {
+                if (command.word.equals(word)) {
+                    return command;
+                }
+            }
+            return UNKNOWN;
+        }
+    }
+
     /**
      * Prints a (possibly multi-line) machine message with each line indented,
      * so it is visually distinct from the user's own typed input.
@@ -77,20 +99,19 @@ public class Jeff {
 
             // The first whitespace-separated word is the command; the rest are its arguments.
             String[] inputParts = input.split(" ", 2);
-            String command = inputParts[0];
+            Command command = Command.fromWord(inputParts[0]);
             String arguments = inputParts.length > 1 ? inputParts[1].trim() : "";
 
-            if (command.equals("bye")) {
+            switch (command) {
+            case BYE:
                 printIndented("Bye. Hope to see you again soon!");
                 System.out.println(DIVIDER);
-                break;
-            }
-            if (command.equals("list")) {
+                scanner.close();
+                return;
+            case LIST:
                 printHistory();
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("mark")) {
+                break;
+            case MARK:
                 try {
                     Task task = history.get(parseTaskIndex(arguments));
                     task.markAsDone();
@@ -101,10 +122,8 @@ public class Jeff {
                 } catch (IndexOutOfBoundsException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("unmark")) {
+                break;
+            case UNMARK:
                 try {
                     Task task = history.get(parseTaskIndex(arguments));
                     task.unmarkAsDone();
@@ -115,10 +134,8 @@ public class Jeff {
                 } catch (IndexOutOfBoundsException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("delete")) {
+                break;
+            case DELETE:
                 try {
                     Task task = history.remove(parseTaskIndex(arguments));
                     printIndented("Noted. I've removed this task:\n  " + task
@@ -128,19 +145,15 @@ public class Jeff {
                 } catch (IndexOutOfBoundsException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("todo")) {
+                break;
+            case TODO:
                 try {
                     addTask(new Todo(arguments));
                 } catch (IllegalArgumentException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("deadline")) {
+                break;
+            case DEADLINE:
                 try {
                     String[] parts = arguments.split("/", 2);
                     addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
@@ -149,10 +162,8 @@ public class Jeff {
                 } catch (IllegalArgumentException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (command.equals("event")) {
+                break;
+            case EVENT:
                 try {
                     String[] parts = arguments.split("/", 3);
                     addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
@@ -161,10 +172,11 @@ public class Jeff {
                 } catch (IllegalArgumentException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
-                System.out.println(DIVIDER);
-                continue;
+                break;
+            default:
+                printIndented("OOPS!!! I'm sorry, but I don't know what that command means.");
+                break;
             }
-            printIndented("OOPS!!! I'm sorry, but I don't know what that command means.");
             System.out.println(DIVIDER);
         }
         scanner.close();
