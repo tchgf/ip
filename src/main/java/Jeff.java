@@ -19,6 +19,13 @@ public class Jeff {
         }
     }
 
+    /** Prints every stored message so far as a numbered list, in the order entered. */
+    private static void printHistory() {
+        for (int i = 0; i < historyCount; i++) {
+            printIndented((i + 1) + ". " + history[i]);
+        }
+    }
+
     public static void main(String[] args) {
         String banner = "     _  _____  _____  _____ \n"
                 + "    | || ____||  ___||  ___|\n"
@@ -34,16 +41,22 @@ public class Jeff {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String input = scanner.nextLine();
+            System.out.println(DIVIDER);
             if (input.equals("bye")) {
                 printIndented("Bye. Hope to see you again soon!");
                 System.out.println(DIVIDER);
                 break;
             }
+            if (input.equals("list")) {
+                printHistory();
+                System.out.println(DIVIDER);
+                continue;
+            }
             if (historyCount < MAX_HISTORY) {
                 history[historyCount] = input;
                 historyCount++;
             }
-            printIndented(input);
+            printIndented("added: " + input);
             System.out.println(DIVIDER);
         }
         scanner.close();
