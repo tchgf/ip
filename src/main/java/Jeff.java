@@ -3,6 +3,11 @@ import java.util.Scanner;
 public class Jeff {
     private static final String INDENT = "    ";
     private static final String DIVIDER = INDENT + "____________________________________________________________";
+    private static final int MAX_HISTORY = 100;
+
+    /** Fixed-size store of everything the user has typed so far, in order. */
+    private static final String[] history = new String[MAX_HISTORY];
+    private static int historyCount = 0;
 
     /**
      * Prints a (possibly multi-line) machine message with each line indented,
@@ -33,6 +38,10 @@ public class Jeff {
                 printIndented("Bye. Hope to see you again soon!");
                 System.out.println(DIVIDER);
                 break;
+            }
+            if (historyCount < MAX_HISTORY) {
+                history[historyCount] = input;
+                historyCount++;
             }
             printIndented(input);
             System.out.println(DIVIDER);
