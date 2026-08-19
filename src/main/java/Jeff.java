@@ -92,24 +92,44 @@ public class Jeff {
                 continue;
             }
             if (input.startsWith("todo")) {
-                String description = input.substring("todo".length()).trim();
-                addTask(new Todo(description));
+                try {
+                    String description = input.substring("todo".length()).trim();
+                    addTask(new Todo(description));
+                } catch (IllegalArgumentException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
                 System.out.println(DIVIDER);
                 continue;
             }
             if (input.startsWith("deadline")) {
-                String[] parts = input.substring("deadline".length()).split("/", 2);
-                addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
+                try {
+                    String[] parts = input.substring("deadline".length()).split("/", 2);
+                    addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    printIndented("OOPS!!! A deadline needs a description and a /by date/time.");
+                } catch (IllegalArgumentException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
                 System.out.println(DIVIDER);
                 continue;
             }
             if (input.startsWith("event")) {
-                String[] parts = input.substring("event".length()).split("/", 3);
-                addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
+                try {
+                    String[] parts = input.substring("event".length()).split("/", 3);
+                    addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    printIndented("OOPS!!! An event needs a description, a /from and a /to date/time.");
+                } catch (IllegalArgumentException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
                 System.out.println(DIVIDER);
                 continue;
             }
-            addTask(new Task(input));
+            try {
+                addTask(new Task(input));
+            } catch (IllegalArgumentException e) {
+                printIndented("OOPS!!! " + e.getMessage());
+            }
             System.out.println(DIVIDER);
         }
         scanner.close();

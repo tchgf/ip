@@ -7,6 +7,9 @@ public class Deadline extends Task {
 
     public Deadline(String description, String by) {
         super(description);
+        if (by == null || by.isBlank()) {
+            throw new IllegalArgumentException("A deadline needs a /by date/time.");
+        }
         this.by = by;
     }
 

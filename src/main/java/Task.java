@@ -4,6 +4,9 @@ public class Task {
     protected boolean isDone;
 
     public Task(String description) {
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("The description of a task cannot be empty.");
+        }
         this.description = description;
         this.isDone = false;
     }

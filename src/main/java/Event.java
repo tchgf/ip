@@ -8,6 +8,12 @@ public class Event extends Task {
 
     public Event(String description, String from, String to) {
         super(description);
+        if (from == null || from.isBlank()) {
+            throw new IllegalArgumentException("An event needs a /from date/time.");
+        }
+        if (to == null || to.isBlank()) {
+            throw new IllegalArgumentException("An event needs a /to date/time.");
+        }
         this.from = from;
         this.to = to;
     }
