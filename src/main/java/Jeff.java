@@ -21,6 +21,7 @@ public class Jeff {
 
     /** Prints every stored task so far as a numbered list, in the order added. */
     private static void printHistory() {
+        printIndented("Here are the tasks in your list:");
         for (int i = 0; i < historyCount; i++) {
             printIndented((i + 1) + "." + history[i]);
         }
@@ -30,6 +31,22 @@ public class Jeff {
     private static int parseTaskIndex(String input, String commandWord) {
         String numberPart = input.substring(commandWord.length()).trim();
         return Integer.parseInt(numberPart) - 1;
+    }
+
+    /** Strips a leading label word (e.g. "by "/"from ") off a "/"-delimited segment, returning what's left. */
+    private static String afterLabel(String segment) {
+        String trimmed = segment.trim();
+        int spaceIndex = trimmed.indexOf(' ');
+        return spaceIndex == -1 ? "" : trimmed.substring(spaceIndex + 1).trim();
+    }
+
+    /** Stores the given task in {@code history} and prints the "added" confirmation. */
+    private static void addTask(Task task) {
+        if (historyCount < MAX_HISTORY) {
+            history[historyCount] = task;
+            historyCount++;
+        }
+        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + historyCount + " tasks in the list.");
     }
 
     public static void main(String[] args) {
@@ -74,11 +91,25 @@ public class Jeff {
                 System.out.println(DIVIDER);
                 continue;
             }
-            if (historyCount < MAX_HISTORY) {
-                history[historyCount] = new Task(input);
-                historyCount++;
+            if (input.startsWith("todo")) {
+                String description = input.substring("todo".length()).trim();
+                addTask(new Todo(description));
+                System.out.println(DIVIDER);
+                continue;
             }
-            printIndented("added: " + input);
+            if (input.startsWith("deadline")) {
+                String[] parts = input.substring("deadline".length()).split("/", 2);
+                addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
+                System.out.println(DIVIDER);
+                continue;
+            }
+            if (input.startsWith("event")) {
+                String[] parts = input.substring("event".length()).split("/", 3);
+                addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
+                System.out.println(DIVIDER);
+                continue;
+            }
+            addTask(new Task(input));
             System.out.println(DIVIDER);
         }
         scanner.close();
