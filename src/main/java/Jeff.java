@@ -22,8 +22,7 @@ public class Jeff {
     /** Prints every stored task so far as a numbered list, in the order added. */
     private static void printHistory() {
         for (int i = 0; i < historyCount; i++) {
-            Task task = history[i];
-            printIndented((i + 1) + ".[" + task.getStatusIcon() + "] " + task.description);
+            printIndented((i + 1) + "." + history[i]);
         }
     }
 
@@ -63,7 +62,7 @@ public class Jeff {
                 Task task = history[parseTaskIndex(input, "mark")];
                 task.markAsDone();
                 printIndented("Nice! I've marked this task as done:");
-                printIndented("  [" + task.getStatusIcon() + "] " + task.description);
+                printIndented("  " + task);
                 System.out.println(DIVIDER);
                 continue;
             }
@@ -71,7 +70,7 @@ public class Jeff {
                 Task task = history[parseTaskIndex(input, "unmark")];
                 task.unmarkAsDone();
                 printIndented("OK, I've marked this task as not done yet:");
-                printIndented("  [" + task.getStatusIcon() + "] " + task.description);
+                printIndented("  " + task);
                 System.out.println(DIVIDER);
                 continue;
             }
