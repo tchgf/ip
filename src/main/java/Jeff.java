@@ -27,10 +27,17 @@ public class Jeff {
         }
     }
 
-    /** Returns the {@code history} index for the task number following a "mark"/"unmark" command word. */
-    private static int parseTaskIndex(String input, String commandWord) {
-        String numberPart = input.substring(commandWord.length()).trim();
-        return Integer.parseInt(numberPart) - 1;
+    /**
+     * Returns the {@code history} index for a "mark"/"unmark" command's task-number argument.
+     * Throws {@link NumberFormatException} if the number is missing/malformed, or
+     * {@link IndexOutOfBoundsException} if it doesn't refer to an existing task.
+     */
+    private static int parseTaskIndex(String numberPart) {
+        int index = Integer.parseInt(numberPart) - 1;
+        if (index < 0 || index >= historyCount) {
+            throw new IndexOutOfBoundsException("Task " + numberPart + " doesn't exist.");
+        }
+        return index;
     }
 
     /** Strips a leading label word (e.g. "by "/"from ") off a "/"-delimited segment, returning what's left. */
@@ -63,47 +70,69 @@ public class Jeff {
 
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            String input = scanner.nextLine();
-            System.out.println(DIVIDER);
-            if (input.equals("bye")) {
+            if (!scanner.hasNextLine()) {
                 printIndented("Bye. Hope to see you again soon!");
                 System.out.println(DIVIDER);
                 break;
             }
-            if (input.equals("list")) {
+            String input = scanner.nextLine();
+            System.out.println(DIVIDER);
+
+            // The first whitespace-separated word is the command; the rest are its arguments.
+            String[] inputParts = input.split(" ", 2);
+            String command = inputParts[0];
+            String arguments = inputParts.length > 1 ? inputParts[1].trim() : "";
+
+            if (command.equals("bye")) {
+                printIndented("Bye. Hope to see you again soon!");
+                System.out.println(DIVIDER);
+                break;
+            }
+            if (command.equals("list")) {
                 printHistory();
                 System.out.println(DIVIDER);
                 continue;
             }
-            if (input.startsWith("mark")) {
-                Task task = history[parseTaskIndex(input, "mark")];
-                task.markAsDone();
-                printIndented("Nice! I've marked this task as done:");
-                printIndented("  " + task);
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (input.startsWith("unmark")) {
-                Task task = history[parseTaskIndex(input, "unmark")];
-                task.unmarkAsDone();
-                printIndented("OK, I've marked this task as not done yet:");
-                printIndented("  " + task);
-                System.out.println(DIVIDER);
-                continue;
-            }
-            if (input.startsWith("todo")) {
+            if (command.equals("mark")) {
                 try {
-                    String description = input.substring("todo".length()).trim();
-                    addTask(new Todo(description));
+                    Task task = history[parseTaskIndex(arguments)];
+                    task.markAsDone();
+                    printIndented("Nice! I've marked this task as done:");
+                    printIndented("  " + task);
+                } catch (NumberFormatException e) {
+                    printIndented("OOPS!!! Please provide a valid task number to mark.");
+                } catch (IndexOutOfBoundsException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
+                System.out.println(DIVIDER);
+                continue;
+            }
+            if (command.equals("unmark")) {
+                try {
+                    Task task = history[parseTaskIndex(arguments)];
+                    task.unmarkAsDone();
+                    printIndented("OK, I've marked this task as not done yet:");
+                    printIndented("  " + task);
+                } catch (NumberFormatException e) {
+                    printIndented("OOPS!!! Please provide a valid task number to unmark.");
+                } catch (IndexOutOfBoundsException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
+                System.out.println(DIVIDER);
+                continue;
+            }
+            if (command.equals("todo")) {
+                try {
+                    addTask(new Todo(arguments));
                 } catch (IllegalArgumentException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
                 System.out.println(DIVIDER);
                 continue;
             }
-            if (input.startsWith("deadline")) {
+            if (command.equals("deadline")) {
                 try {
-                    String[] parts = input.substring("deadline".length()).split("/", 2);
+                    String[] parts = arguments.split("/", 2);
                     addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     printIndented("OOPS!!! A deadline needs a description and a /by date/time.");
@@ -113,9 +142,9 @@ public class Jeff {
                 System.out.println(DIVIDER);
                 continue;
             }
-            if (input.startsWith("event")) {
+            if (command.equals("event")) {
                 try {
-                    String[] parts = input.substring("event".length()).split("/", 3);
+                    String[] parts = arguments.split("/", 3);
                     addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     printIndented("OOPS!!! An event needs a description, a /from and a /to date/time.");
@@ -125,11 +154,7 @@ public class Jeff {
                 System.out.println(DIVIDER);
                 continue;
             }
-            try {
-                addTask(new Task(input));
-            } catch (IllegalArgumentException e) {
-                printIndented("OOPS!!! " + e.getMessage());
-            }
+            printIndented("OOPS!!! I'm sorry, but I don't know what that command means.");
             System.out.println(DIVIDER);
         }
         scanner.close();
