@@ -1,13 +1,13 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Jeff {
     private static final String INDENT = "    ";
     private static final String DIVIDER = INDENT + "____________________________________________________________";
-    private static final int MAX_HISTORY = 100;
 
-    /** Fixed-size store of every task the user has added so far, in order. */
-    private static final Task[] history = new Task[MAX_HISTORY];
-    private static int historyCount = 0;
+    /** Store of every task the user has added so far, in order. */
+    private static final List<Task> history = new ArrayList<>();
 
     /**
      * Prints a (possibly multi-line) machine message with each line indented,
@@ -22,19 +22,19 @@ public class Jeff {
     /** Prints every stored task so far as a numbered list, in the order added. */
     private static void printHistory() {
         printIndented("Here are the tasks in your list:");
-        for (int i = 0; i < historyCount; i++) {
-            printIndented((i + 1) + "." + history[i]);
+        for (int i = 0; i < history.size(); i++) {
+            printIndented((i + 1) + "." + history.get(i));
         }
     }
 
     /**
-     * Returns the {@code history} index for a "mark"/"unmark" command's task-number argument.
+     * Returns the {@code history} index for a "mark"/"unmark"/"delete" command's task-number argument.
      * Throws {@link NumberFormatException} if the number is missing/malformed, or
      * {@link IndexOutOfBoundsException} if it doesn't refer to an existing task.
      */
     private static int parseTaskIndex(String numberPart) {
         int index = Integer.parseInt(numberPart) - 1;
-        if (index < 0 || index >= historyCount) {
+        if (index < 0 || index >= history.size()) {
             throw new IndexOutOfBoundsException("Task " + numberPart + " doesn't exist.");
         }
         return index;
@@ -49,11 +49,8 @@ public class Jeff {
 
     /** Stores the given task in {@code history} and prints the "added" confirmation. */
     private static void addTask(Task task) {
-        if (historyCount < MAX_HISTORY) {
-            history[historyCount] = task;
-            historyCount++;
-        }
-        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + historyCount + " tasks in the list.");
+        history.add(task);
+        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + history.size() + " tasks in the list.");
     }
 
     public static void main(String[] args) {
@@ -95,7 +92,7 @@ public class Jeff {
             }
             if (command.equals("mark")) {
                 try {
-                    Task task = history[parseTaskIndex(arguments)];
+                    Task task = history.get(parseTaskIndex(arguments));
                     task.markAsDone();
                     printIndented("Nice! I've marked this task as done:");
                     printIndented("  " + task);
@@ -109,12 +106,25 @@ public class Jeff {
             }
             if (command.equals("unmark")) {
                 try {
-                    Task task = history[parseTaskIndex(arguments)];
+                    Task task = history.get(parseTaskIndex(arguments));
                     task.unmarkAsDone();
                     printIndented("OK, I've marked this task as not done yet:");
                     printIndented("  " + task);
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to unmark.");
+                } catch (IndexOutOfBoundsException e) {
+                    printIndented("OOPS!!! " + e.getMessage());
+                }
+                System.out.println(DIVIDER);
+                continue;
+            }
+            if (command.equals("delete")) {
+                try {
+                    Task task = history.remove(parseTaskIndex(arguments));
+                    printIndented("Noted. I've removed this task:\n  " + task
+                            + "\nNow you have " + history.size() + " tasks in the list.");
+                } catch (NumberFormatException e) {
+                    printIndented("OOPS!!! Please provide a valid task number to delete.");
                 } catch (IndexOutOfBoundsException e) {
                     printIndented("OOPS!!! " + e.getMessage());
                 }
