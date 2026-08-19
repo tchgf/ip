@@ -5,8 +5,8 @@ public class Jeff {
     private static final String DIVIDER = INDENT + "____________________________________________________________";
     private static final int MAX_HISTORY = 100;
 
-    /** Fixed-size store of everything the user has typed so far, in order. */
-    private static final String[] history = new String[MAX_HISTORY];
+    /** Fixed-size store of every task the user has added so far, in order. */
+    private static final Task[] history = new Task[MAX_HISTORY];
     private static int historyCount = 0;
 
     /**
@@ -19,11 +19,18 @@ public class Jeff {
         }
     }
 
-    /** Prints every stored message so far as a numbered list, in the order entered. */
+    /** Prints every stored task so far as a numbered list, in the order added. */
     private static void printHistory() {
         for (int i = 0; i < historyCount; i++) {
-            printIndented((i + 1) + ". " + history[i]);
+            Task task = history[i];
+            printIndented((i + 1) + ".[" + task.getStatusIcon() + "] " + task.description);
         }
+    }
+
+    /** Returns the {@code history} index for the task number following a "mark"/"unmark" command word. */
+    private static int parseTaskIndex(String input, String commandWord) {
+        String numberPart = input.substring(commandWord.length()).trim();
+        return Integer.parseInt(numberPart) - 1;
     }
 
     public static void main(String[] args) {
@@ -52,8 +59,24 @@ public class Jeff {
                 System.out.println(DIVIDER);
                 continue;
             }
+            if (input.startsWith("mark")) {
+                Task task = history[parseTaskIndex(input, "mark")];
+                task.markAsDone();
+                printIndented("Nice! I've marked this task as done:");
+                printIndented("  [" + task.getStatusIcon() + "] " + task.description);
+                System.out.println(DIVIDER);
+                continue;
+            }
+            if (input.startsWith("unmark")) {
+                Task task = history[parseTaskIndex(input, "unmark")];
+                task.unmarkAsDone();
+                printIndented("OK, I've marked this task as not done yet:");
+                printIndented("  [" + task.getStatusIcon() + "] " + task.description);
+                System.out.println(DIVIDER);
+                continue;
+            }
             if (historyCount < MAX_HISTORY) {
-                history[historyCount] = input;
+                history[historyCount] = new Task(input);
                 historyCount++;
             }
             printIndented("added: " + input);
