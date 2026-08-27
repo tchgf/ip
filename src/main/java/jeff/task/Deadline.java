@@ -13,6 +13,13 @@ public class Deadline extends Task {
 
     protected LocalDate by;
 
+    /**
+     * Creates a new, not-done deadline with the given description and due date.
+     *
+     * @param description what the task is; must not be null or blank.
+     * @param by the due date, in "yyyy-mm-dd" format; must not be null, blank, or wrongly formatted.
+     * @throws IllegalArgumentException if description or by is invalid.
+     */
     public Deadline(String description, String by) {
         super(description);
         this.by = parseDate(by);
@@ -34,11 +41,13 @@ public class Deadline extends Task {
         }
     }
 
+    /** Returns this deadline's status icon, description, and by date, prefixed with "[D]". */
     @Override
     public String toString() {
         return "[D]" + super.toString() + " (by: " + by.format(PRINT_FORMAT) + ")";
     }
 
+    /** Returns this deadline's data encoded for {@link jeff.storage.Storage}, prefixed with "D". */
     @Override
     public String toSaveFormat() {
         return "D | " + super.toSaveFormat() + " | " + by;

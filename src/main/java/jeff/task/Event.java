@@ -14,6 +14,14 @@ public class Event extends Task {
     protected LocalDate from;
     protected LocalDate to;
 
+    /**
+     * Creates a new, not-done event with the given description and start/end dates.
+     *
+     * @param description what the task is; must not be null or blank.
+     * @param from the start date, in "yyyy-mm-dd" format; must not be null, blank, or wrongly formatted.
+     * @param to the end date, in "yyyy-mm-dd" format; must not be null, blank, or wrongly formatted.
+     * @throws IllegalArgumentException if description, from, or to is invalid.
+     */
     public Event(String description, String from, String to) {
         super(description);
         this.from = parseDate(from, "/from");
@@ -38,12 +46,14 @@ public class Event extends Task {
         }
     }
 
+    /** Returns this event's status icon, description, and from/to dates, prefixed with "[E]". */
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + from.format(PRINT_FORMAT)
                 + " to: " + to.format(PRINT_FORMAT) + ")";
     }
 
+    /** Returns this event's data encoded for {@link jeff.storage.Storage}, prefixed with "E". */
     @Override
     public String toSaveFormat() {
         return "E | " + super.toSaveFormat() + " | " + from + " | " + to;
