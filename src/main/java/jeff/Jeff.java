@@ -7,9 +7,13 @@ import java.util.Scanner;
 public class Jeff {
     private static final String INDENT = "    ";
     private static final String DIVIDER = INDENT + "____________________________________________________________";
+    private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
     /** Store of every task the user has added so far, in order. */
     private static final List<Task> history = new ArrayList<>();
+
+    /** Persists {@code history} to, and restores it from, {@link #SAVE_FILE_PATH}. */
+    private static final Storage storage = new Storage(SAVE_FILE_PATH);
 
     /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
     private enum Command {
@@ -75,9 +79,12 @@ public class Jeff {
     private static void addTask(Task task) {
         history.add(task);
         printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + history.size() + " tasks in the list.");
+        storage.save(history);
     }
 
     public static void main(String[] args) {
+        history.addAll(storage.load());
+
         String banner = "     _  _____  _____  _____ \n"
                 + "    | || ____||  ___||  ___|\n"
                 + "    | || |__  | |_   | |_   \n"
@@ -119,6 +126,7 @@ public class Jeff {
                     task.markAsDone();
                     printIndented("Nice! I've marked this task as done:");
                     printIndented("  " + task);
+                    storage.save(history);
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to mark.");
                 } catch (IndexOutOfBoundsException e) {
@@ -131,6 +139,7 @@ public class Jeff {
                     task.unmarkAsDone();
                     printIndented("OK, I've marked this task as not done yet:");
                     printIndented("  " + task);
+                    storage.save(history);
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to unmark.");
                 } catch (IndexOutOfBoundsException e) {
@@ -142,6 +151,7 @@ public class Jeff {
                     Task task = history.remove(parseTaskIndex(arguments));
                     printIndented("Noted. I've removed this task:\n  " + task
                             + "\nNow you have " + history.size() + " tasks in the list.");
+                    storage.save(history);
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to delete.");
                 } catch (IndexOutOfBoundsException e) {
