@@ -64,4 +64,27 @@ public class TaskListTest {
 
         assertEquals(List.of(first, second), tasks);
     }
+
+    @Test
+    public void find_keywordInSomeDescriptions_returnsOnlyMatchesInOrder() {
+        TaskList taskList = new TaskList();
+        Task readBook = new Todo("read book");
+        Task writeEssay = new Todo("write essay");
+        Task returnBook = new Todo("return book");
+        taskList.add(readBook);
+        taskList.add(writeEssay);
+        taskList.add(returnBook);
+
+        List<Task> matches = taskList.find("book");
+
+        assertEquals(List.of(readBook, returnBook), matches);
+    }
+
+    @Test
+    public void find_noMatches_returnsEmptyList() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+
+        assertEquals(List.of(), taskList.find("essay"));
+    }
 }

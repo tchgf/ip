@@ -14,6 +14,12 @@ public class TaskTest {
     }
 
     @Test
+    public void getDescription_returnsDescriptionPassedToConstructor() {
+        Task task = new Task("read book");
+        assertEquals("read book", task.getDescription());
+    }
+
+    @Test
     public void constructor_validDescription_startsNotDone() {
         Task task = new Task("read book");
         assertEquals(" ", task.getStatusIcon());
