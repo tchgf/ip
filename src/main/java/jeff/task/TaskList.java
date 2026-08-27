@@ -15,7 +15,7 @@ public class TaskList {
         this.tasks = new ArrayList<>();
     }
 
-    /** Creates a task list pre-populated with the given tasks, e.g. loaded from {@link Storage}. */
+    /** Creates a task list pre-populated with the given tasks, e.g. loaded from {@link jeff.storage.Storage}. */
     public TaskList(List<Task> tasks) {
         this.tasks = new ArrayList<>(tasks);
     }
@@ -40,7 +40,10 @@ public class TaskList {
         return tasks.size();
     }
 
-    /** Returns the underlying tasks, e.g. for {@link Storage} to persist or {@link Ui} to display. */
+    /**
+     * Returns the underlying tasks, e.g. for {@link jeff.storage.Storage} to persist
+     * or {@link jeff.ui.Ui} to display.
+     */
     public List<Task> getTasks() {
         return tasks;
     }
