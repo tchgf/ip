@@ -1,4 +1,6 @@
-package jeff;
+package jeff.ui;
+
+import jeff.Task;
 
 import java.util.List;
 import java.util.Scanner;
