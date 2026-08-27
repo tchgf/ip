@@ -12,48 +12,6 @@ public class Jeff {
     /** Handles all printing to, and reading from, the user. */
     private static final Ui ui = new Ui();
 
-    /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
-    private enum Command {
-        BYE("bye"), LIST("list"), MARK("mark"), UNMARK("unmark"), DELETE("delete"),
-        TODO("todo"), DEADLINE("deadline"), EVENT("event"), UNKNOWN("");
-
-        private final String word;
-
-        Command(String word) {
-            this.word = word;
-        }
-
-        /** Looks up the command matching the given (case-sensitive) first word of user input. */
-        static Command fromWord(String word) {
-            for (Command command : values()) {
-                if (command.word.equals(word)) {
-                    return command;
-                }
-            }
-            return UNKNOWN;
-        }
-    }
-
-    /**
-     * Returns the {@code taskList} index for a "mark"/"unmark"/"delete" command's task-number argument.
-     * Throws {@link NumberFormatException} if the number is missing/malformed, or
-     * {@link IndexOutOfBoundsException} if it doesn't refer to an existing task.
-     */
-    private static int parseTaskIndex(String numberPart) {
-        int index = Integer.parseInt(numberPart) - 1;
-        if (index < 0 || index >= taskList.size()) {
-            throw new IndexOutOfBoundsException("Task " + numberPart + " doesn't exist.");
-        }
-        return index;
-    }
-
-    /** Strips a leading label word (e.g. "by "/"from ") off a "/"-delimited segment, returning what's left. */
-    private static String afterLabel(String segment) {
-        String trimmed = segment.trim();
-        int spaceIndex = trimmed.indexOf(' ');
-        return spaceIndex == -1 ? "" : trimmed.substring(spaceIndex + 1).trim();
-    }
-
     /** Stores the given task in {@code taskList} and prints the "added" confirmation. */
     private static void addTask(Task task) {
         taskList.add(task);
@@ -74,10 +32,8 @@ public class Jeff {
             }
             ui.showLine();
 
-            // The first whitespace-separated word is the command; the rest are its arguments.
-            String[] inputParts = input.split(" ", 2);
-            Command command = Command.fromWord(inputParts[0]);
-            String arguments = inputParts.length > 1 ? inputParts[1].trim() : "";
+            Parser.Command command = Parser.parseCommandType(input);
+            String arguments = Parser.getArguments(input);
 
             switch (command) {
             case BYE:
@@ -90,7 +46,7 @@ public class Jeff {
                 break;
             case MARK:
                 try {
-                    Task task = taskList.get(parseTaskIndex(arguments));
+                    Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
                     task.markAsDone();
                     ui.showTaskMarked(task);
                     storage.save(taskList.getTasks());
@@ -102,7 +58,7 @@ public class Jeff {
                 break;
             case UNMARK:
                 try {
-                    Task task = taskList.get(parseTaskIndex(arguments));
+                    Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
                     task.unmarkAsDone();
                     ui.showTaskUnmarked(task);
                     storage.save(taskList.getTasks());
@@ -114,7 +70,7 @@ public class Jeff {
                 break;
             case DELETE:
                 try {
-                    Task task = taskList.remove(parseTaskIndex(arguments));
+                    Task task = taskList.remove(Parser.parseTaskIndex(arguments, taskList.size()));
                     ui.showTaskRemoved(task, taskList.size());
                     storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
@@ -132,8 +88,8 @@ public class Jeff {
                 break;
             case DEADLINE:
                 try {
-                    String[] parts = arguments.split("/", 2);
-                    addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
+                    String[] parts = Parser.splitDeadlineArgs(arguments);
+                    addTask(new Deadline(parts[0], parts[1]));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     ui.showError("A deadline needs a description and a /by date/time.");
                 } catch (IllegalArgumentException e) {
@@ -142,8 +98,8 @@ public class Jeff {
                 break;
             case EVENT:
                 try {
-                    String[] parts = arguments.split("/", 3);
-                    addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
+                    String[] parts = Parser.splitEventArgs(arguments);
+                    addTask(new Event(parts[0], parts[1], parts[2]));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     ui.showError("An event needs a description, a /from and a /to date/time.");
                 } catch (IllegalArgumentException e) {
