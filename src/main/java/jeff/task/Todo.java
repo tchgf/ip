@@ -1,4 +1,4 @@
-package jeff;
+package jeff.task;
 
 /**
  * A task with no date or time attached to it, e.g. "visit new theme park".

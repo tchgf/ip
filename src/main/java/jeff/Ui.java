@@ -3,6 +3,8 @@ package jeff;
 import java.util.List;
 import java.util.Scanner;
 
+import jeff.task.Task;
+
 /**
  * Handles all interaction with the user: printing Jeff's messages and
  * reading the user's typed input.

@@ -1,5 +1,11 @@
 package jeff;
 
+import jeff.task.Deadline;
+import jeff.task.Event;
+import jeff.task.Task;
+import jeff.task.TaskList;
+import jeff.task.Todo;
+
 public class Jeff {
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
