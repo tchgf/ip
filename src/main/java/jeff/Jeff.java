@@ -9,6 +9,11 @@ import jeff.task.TaskList;
 import jeff.task.Todo;
 import jeff.ui.Ui;
 
+/**
+ * Entry point for the Jeff chatbot. Wires together {@link Ui}, {@link Storage},
+ * and {@link TaskList}, and drives the read-parse-execute loop that reads a
+ * command from the user, asks {@link Parser} to make sense of it, and acts on it.
+ */
 public class Jeff {
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
@@ -28,6 +33,12 @@ public class Jeff {
         storage.save(taskList.getTasks());
     }
 
+    /**
+     * Loads any previously saved tasks, greets the user, then repeatedly reads
+     * and executes commands until a "bye" command or end of input is reached.
+     *
+     * @param args unused; Jeff takes no command-line arguments.
+     */
     public static void main(String[] args) {
         taskList.getTasks().addAll(storage.load());
         ui.showWelcome();

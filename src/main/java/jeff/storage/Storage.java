@@ -18,6 +18,11 @@ import jeff.task.Todo;
 public class Storage {
     private final Path filePath;
 
+    /**
+     * Creates a Storage bound to the given save file path (which need not exist yet).
+     *
+     * @param filePath path (relative or absolute) of the file to load from and save to.
+     */
     public Storage(String filePath) {
         this.filePath = Path.of(filePath);
     }
