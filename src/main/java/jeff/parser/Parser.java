@@ -1,4 +1,4 @@
-package jeff;
+package jeff.parser;
 
 /**
  * Makes sense of raw user input: figuring out which command was typed, and
