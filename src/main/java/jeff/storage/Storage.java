@@ -1,10 +1,15 @@
-package jeff;
+package jeff.storage;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import jeff.task.Deadline;
+import jeff.task.Event;
+import jeff.task.Task;
+import jeff.task.Todo;
 
 /**
  * Reads tasks from, and writes tasks to, a fixed file on disk, so that the
