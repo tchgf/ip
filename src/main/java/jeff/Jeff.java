@@ -1,7 +1,5 @@
 package jeff;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Jeff {
@@ -9,10 +7,10 @@ public class Jeff {
     private static final String DIVIDER = INDENT + "____________________________________________________________";
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
-    /** Store of every task the user has added so far, in order. */
-    private static final List<Task> history = new ArrayList<>();
+    /** Every task the user has added so far, in order. */
+    private static final TaskList taskList = new TaskList();
 
-    /** Persists {@code history} to, and restores it from, {@link #SAVE_FILE_PATH}. */
+    /** Persists {@code taskList} to, and restores it from, {@link #SAVE_FILE_PATH}. */
     private static final Storage storage = new Storage(SAVE_FILE_PATH);
 
     /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
@@ -50,19 +48,19 @@ public class Jeff {
     /** Prints every stored task so far as a numbered list, in the order added. */
     private static void printHistory() {
         printIndented("Here are the tasks in your list:");
-        for (int i = 0; i < history.size(); i++) {
-            printIndented((i + 1) + "." + history.get(i));
+        for (int i = 0; i < taskList.size(); i++) {
+            printIndented((i + 1) + "." + taskList.get(i));
         }
     }
 
     /**
-     * Returns the {@code history} index for a "mark"/"unmark"/"delete" command's task-number argument.
+     * Returns the {@code taskList} index for a "mark"/"unmark"/"delete" command's task-number argument.
      * Throws {@link NumberFormatException} if the number is missing/malformed, or
      * {@link IndexOutOfBoundsException} if it doesn't refer to an existing task.
      */
     private static int parseTaskIndex(String numberPart) {
         int index = Integer.parseInt(numberPart) - 1;
-        if (index < 0 || index >= history.size()) {
+        if (index < 0 || index >= taskList.size()) {
             throw new IndexOutOfBoundsException("Task " + numberPart + " doesn't exist.");
         }
         return index;
@@ -75,15 +73,15 @@ public class Jeff {
         return spaceIndex == -1 ? "" : trimmed.substring(spaceIndex + 1).trim();
     }
 
-    /** Stores the given task in {@code history} and prints the "added" confirmation. */
+    /** Stores the given task in {@code taskList} and prints the "added" confirmation. */
     private static void addTask(Task task) {
-        history.add(task);
-        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + history.size() + " tasks in the list.");
-        storage.save(history);
+        taskList.add(task);
+        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + taskList.size() + " tasks in the list.");
+        storage.save(taskList.getTasks());
     }
 
     public static void main(String[] args) {
-        history.addAll(storage.load());
+        taskList.getTasks().addAll(storage.load());
 
         String banner = "     _  _____  _____  _____ \n"
                 + "    | || ____||  ___||  ___|\n"
@@ -122,11 +120,11 @@ public class Jeff {
                 break;
             case MARK:
                 try {
-                    Task task = history.get(parseTaskIndex(arguments));
+                    Task task = taskList.get(parseTaskIndex(arguments));
                     task.markAsDone();
                     printIndented("Nice! I've marked this task as done:");
                     printIndented("  " + task);
-                    storage.save(history);
+                    storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to mark.");
                 } catch (IndexOutOfBoundsException e) {
@@ -135,11 +133,11 @@ public class Jeff {
                 break;
             case UNMARK:
                 try {
-                    Task task = history.get(parseTaskIndex(arguments));
+                    Task task = taskList.get(parseTaskIndex(arguments));
                     task.unmarkAsDone();
                     printIndented("OK, I've marked this task as not done yet:");
                     printIndented("  " + task);
-                    storage.save(history);
+                    storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to unmark.");
                 } catch (IndexOutOfBoundsException e) {
@@ -148,10 +146,10 @@ public class Jeff {
                 break;
             case DELETE:
                 try {
-                    Task task = history.remove(parseTaskIndex(arguments));
+                    Task task = taskList.remove(parseTaskIndex(arguments));
                     printIndented("Noted. I've removed this task:\n  " + task
-                            + "\nNow you have " + history.size() + " tasks in the list.");
-                    storage.save(history);
+                            + "\nNow you have " + taskList.size() + " tasks in the list.");
+                    storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
                     printIndented("OOPS!!! Please provide a valid task number to delete.");
                 } catch (IndexOutOfBoundsException e) {
