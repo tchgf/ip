@@ -91,6 +91,24 @@ public class UiTest {
     }
 
     @Test
+    public void showMatchingTasks_emptyList_printsHeaderOnly() {
+        new Ui().showMatchingTasks(List.of());
+        assertEquals("    Here are the matching tasks in your list:" + System.lineSeparator(), output());
+    }
+
+    @Test
+    public void showMatchingTasks_numbersTasksInOrder() {
+        Task first = new Todo("read book");
+        Task second = new Todo("return book");
+        new Ui().showMatchingTasks(List.of(first, second));
+
+        String printed = output();
+        assertTrue(printed.contains("Here are the matching tasks in your list:"));
+        assertTrue(printed.contains("1.[T][ ] read book"));
+        assertTrue(printed.contains("2.[T][ ] return book"));
+    }
+
+    @Test
     public void showTaskAdded_includesTaskAndCount() {
         new Ui().showTaskAdded(new Todo("read book"), 2);
         String printed = output();

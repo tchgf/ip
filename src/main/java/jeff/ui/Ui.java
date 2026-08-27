@@ -56,7 +56,17 @@ public class Ui {
 
     /** Prints every given task as a numbered list, in order. */
     public void showTaskList(List<Task> tasks) {
-        StringBuilder message = new StringBuilder("Here are the tasks in your list:");
+        showNumberedTasks("Here are the tasks in your list:", tasks);
+    }
+
+    /** Prints every given task that matched a "find" search, numbered in order. */
+    public void showMatchingTasks(List<Task> tasks) {
+        showNumberedTasks("Here are the matching tasks in your list:", tasks);
+    }
+
+    /** Prints the given header followed by each task, numbered from 1 in the given order. */
+    private void showNumberedTasks(String header, List<Task> tasks) {
+        StringBuilder message = new StringBuilder(header);
         for (int i = 0; i < tasks.size(); i++) {
             message.append("\n").append(i + 1).append(".").append(tasks.get(i));
         }

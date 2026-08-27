@@ -126,6 +126,13 @@ public class Jeff {
                     ui.showError(e.getMessage());
                 }
                 break;
+            case FIND:
+                if (arguments.isEmpty()) {
+                    ui.showError("Please provide a keyword to search for.");
+                } else {
+                    ui.showMatchingTasks(taskList.find(arguments));
+                }
+                break;
             default:
                 ui.showError("I'm sorry, but I don't know what that command means.");
                 break;
