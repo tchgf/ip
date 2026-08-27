@@ -70,7 +70,8 @@ public class Ui {
 
     /** Prints confirmation that a task was removed, e.g. after a "delete" command. */
     public void showTaskRemoved(Task task, int taskCount) {
-        showMessage("Noted. I've removed this task:\n  " + task + "\nNow you have " + taskCount + " tasks in the list.");
+        showMessage("Noted. I've removed this task:\n  " + task
+                + "\nNow you have " + taskCount + " tasks in the list.");
     }
 
     /** Prints confirmation that a task was marked done. */
