@@ -5,6 +5,7 @@ import jeff.task.Event;
 import jeff.task.Task;
 import jeff.task.TaskList;
 import jeff.task.Todo;
+import jeff.ui.Ui;
 
 public class Jeff {
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
