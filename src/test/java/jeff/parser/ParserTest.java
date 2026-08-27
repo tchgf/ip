@@ -17,6 +17,7 @@ public class ParserTest {
         assertEquals(Parser.Command.TODO, Parser.parseCommandType("todo read book"));
         assertEquals(Parser.Command.DEADLINE, Parser.parseCommandType("deadline return book /by 2019-10-15"));
         assertEquals(Parser.Command.EVENT, Parser.parseCommandType("event trip /from 2019-11-01 /to 2019-11-05"));
+        assertEquals(Parser.Command.FIND, Parser.parseCommandType("find book"));
     }
 
     @Test

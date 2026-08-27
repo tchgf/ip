@@ -8,7 +8,7 @@ public class Parser {
     /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
     public enum Command {
         BYE("bye"), LIST("list"), MARK("mark"), UNMARK("unmark"), DELETE("delete"),
-        TODO("todo"), DEADLINE("deadline"), EVENT("event"), UNKNOWN("");
+        TODO("todo"), DEADLINE("deadline"), EVENT("event"), FIND("find"), UNKNOWN("");
 
         private final String word;
 
