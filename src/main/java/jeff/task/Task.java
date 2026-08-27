@@ -1,4 +1,4 @@
-package jeff;
+package jeff.task;
 
 public class Task {
     protected String description;
