@@ -1,3 +1,5 @@
+package jeff;
+
 /**
  * A task that starts at a specific date/time and ends at a specific date/time,
  * e.g. "team project meeting 2/10/2019 2-4pm".
@@ -21,5 +23,10 @@ public class Event extends Task {
     @Override
     public String toString() {
         return "[E]" + super.toString() + " (from: " + from + " to: " + to + ")";
+    }
+
+    @Override
+    public String toSaveFormat() {
+        return "E | " + super.toSaveFormat() + " | " + from + " | " + to;
     }
 }

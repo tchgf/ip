@@ -1,3 +1,4 @@
+package jeff;
 
 public class Task {
     protected String description;
@@ -26,5 +27,14 @@ public class Task {
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
+    }
+
+    /**
+     * Returns this task's data encoded as a single line for {@link Storage} to
+     * write to disk. Subclasses prepend their own type letter and append any
+     * extra fields (e.g. dates), separated by {@code " | "}.
+     */
+    public String toSaveFormat() {
+        return (isDone ? "1" : "0") + " | " + description;
     }
 }
