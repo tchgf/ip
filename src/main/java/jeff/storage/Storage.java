@@ -1,4 +1,9 @@
-package jeff;
+package jeff.storage;
+
+import jeff.Deadline;
+import jeff.Event;
+import jeff.Task;
+import jeff.Todo;
 
 import java.io.IOException;
 import java.nio.file.Files;

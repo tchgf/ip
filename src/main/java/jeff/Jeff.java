@@ -1,5 +1,7 @@
 package jeff;
 
+import jeff.storage.Storage;
+
 public class Jeff {
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
