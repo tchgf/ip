@@ -1,10 +1,6 @@
 package jeff;
 
-import java.util.Scanner;
-
 public class Jeff {
-    private static final String INDENT = "    ";
-    private static final String DIVIDER = INDENT + "____________________________________________________________";
     private static final String SAVE_FILE_PATH = "./data/jeff.txt";
 
     /** Every task the user has added so far, in order. */
@@ -12,6 +8,9 @@ public class Jeff {
 
     /** Persists {@code taskList} to, and restores it from, {@link #SAVE_FILE_PATH}. */
     private static final Storage storage = new Storage(SAVE_FILE_PATH);
+
+    /** Handles all printing to, and reading from, the user. */
+    private static final Ui ui = new Ui();
 
     /** The fixed set of commands Jeff understands, each tied to the exact word that triggers it. */
     private enum Command {
@@ -32,24 +31,6 @@ public class Jeff {
                 }
             }
             return UNKNOWN;
-        }
-    }
-
-    /**
-     * Prints a (possibly multi-line) machine message with each line indented,
-     * so it is visually distinct from the user's own typed input.
-     */
-    private static void printIndented(String message) {
-        for (String line : message.split("\n")) {
-            System.out.println(INDENT + line);
-        }
-    }
-
-    /** Prints every stored task so far as a numbered list, in the order added. */
-    private static void printHistory() {
-        printIndented("Here are the tasks in your list:");
-        for (int i = 0; i < taskList.size(); i++) {
-            printIndented((i + 1) + "." + taskList.get(i));
         }
     }
 
@@ -76,33 +57,22 @@ public class Jeff {
     /** Stores the given task in {@code taskList} and prints the "added" confirmation. */
     private static void addTask(Task task) {
         taskList.add(task);
-        printIndented("Got it. I've added this task:\n  " + task + "\nNow you have " + taskList.size() + " tasks in the list.");
+        ui.showTaskAdded(task, taskList.size());
         storage.save(taskList.getTasks());
     }
 
     public static void main(String[] args) {
         taskList.getTasks().addAll(storage.load());
+        ui.showWelcome();
 
-        String banner = "     _  _____  _____  _____ \n"
-                + "    | || ____||  ___||  ___|\n"
-                + "    | || |__  | |_   | |_   \n"
-                + "| |_| ||  __| |  _|  |  _|  \n"
-                + " \\___/ |_____||_|    |_|    ";
-        System.out.println(DIVIDER);
-        printIndented(banner);
-        printIndented("Hello! I'm Jeff.");
-        printIndented("What can I do for you?");
-        System.out.println(DIVIDER);
-
-        Scanner scanner = new Scanner(System.in);
         while (true) {
-            if (!scanner.hasNextLine()) {
-                printIndented("Bye. Hope to see you again soon!");
-                System.out.println(DIVIDER);
+            String input = ui.readCommand();
+            if (input == null) {
+                ui.showBye();
+                ui.showLine();
                 break;
             }
-            String input = scanner.nextLine();
-            System.out.println(DIVIDER);
+            ui.showLine();
 
             // The first whitespace-separated word is the command; the rest are its arguments.
             String[] inputParts = input.split(" ", 2);
@@ -111,56 +81,53 @@ public class Jeff {
 
             switch (command) {
             case BYE:
-                printIndented("Bye. Hope to see you again soon!");
-                System.out.println(DIVIDER);
-                scanner.close();
+                ui.showBye();
+                ui.showLine();
+                ui.close();
                 return;
             case LIST:
-                printHistory();
+                ui.showTaskList(taskList.getTasks());
                 break;
             case MARK:
                 try {
                     Task task = taskList.get(parseTaskIndex(arguments));
                     task.markAsDone();
-                    printIndented("Nice! I've marked this task as done:");
-                    printIndented("  " + task);
+                    ui.showTaskMarked(task);
                     storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
-                    printIndented("OOPS!!! Please provide a valid task number to mark.");
+                    ui.showError("Please provide a valid task number to mark.");
                 } catch (IndexOutOfBoundsException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case UNMARK:
                 try {
                     Task task = taskList.get(parseTaskIndex(arguments));
                     task.unmarkAsDone();
-                    printIndented("OK, I've marked this task as not done yet:");
-                    printIndented("  " + task);
+                    ui.showTaskUnmarked(task);
                     storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
-                    printIndented("OOPS!!! Please provide a valid task number to unmark.");
+                    ui.showError("Please provide a valid task number to unmark.");
                 } catch (IndexOutOfBoundsException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case DELETE:
                 try {
                     Task task = taskList.remove(parseTaskIndex(arguments));
-                    printIndented("Noted. I've removed this task:\n  " + task
-                            + "\nNow you have " + taskList.size() + " tasks in the list.");
+                    ui.showTaskRemoved(task, taskList.size());
                     storage.save(taskList.getTasks());
                 } catch (NumberFormatException e) {
-                    printIndented("OOPS!!! Please provide a valid task number to delete.");
+                    ui.showError("Please provide a valid task number to delete.");
                 } catch (IndexOutOfBoundsException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case TODO:
                 try {
                     addTask(new Todo(arguments));
                 } catch (IllegalArgumentException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case DEADLINE:
@@ -168,9 +135,9 @@ public class Jeff {
                     String[] parts = arguments.split("/", 2);
                     addTask(new Deadline(parts[0].trim(), afterLabel(parts[1])));
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    printIndented("OOPS!!! A deadline needs a description and a /by date/time.");
+                    ui.showError("A deadline needs a description and a /by date/time.");
                 } catch (IllegalArgumentException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             case EVENT:
@@ -178,17 +145,16 @@ public class Jeff {
                     String[] parts = arguments.split("/", 3);
                     addTask(new Event(parts[0].trim(), afterLabel(parts[1]), afterLabel(parts[2])));
                 } catch (ArrayIndexOutOfBoundsException e) {
-                    printIndented("OOPS!!! An event needs a description, a /from and a /to date/time.");
+                    ui.showError("An event needs a description, a /from and a /to date/time.");
                 } catch (IllegalArgumentException e) {
-                    printIndented("OOPS!!! " + e.getMessage());
+                    ui.showError(e.getMessage());
                 }
                 break;
             default:
-                printIndented("OOPS!!! I'm sorry, but I don't know what that command means.");
+                ui.showError("I'm sorry, but I don't know what that command means.");
                 break;
             }
-            System.out.println(DIVIDER);
+            ui.showLine();
         }
-        scanner.close();
     }
 }
