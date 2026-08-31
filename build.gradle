@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
     id 'com.gradleup.shadow' version '9.5.1'
 }
 
@@ -12,6 +13,11 @@ java {
 
 checkstyle {
     toolVersion = '11.0.0'
+}
+
+javafx {
+    version = '21.0.7'
+    modules = ['javafx.controls']
 }
 
 repositories {
@@ -58,4 +64,11 @@ shadowJar {
 
 run {
     standardInput = System.in
+}
+
+tasks.register('runGui', JavaExec) {
+    group = 'application'
+    description = 'Runs the JavaFX GUI for Jeff.'
+    mainClass = 'jeff.gui.Main'
+    classpath = sourceSets.main.runtimeClasspath
 }
