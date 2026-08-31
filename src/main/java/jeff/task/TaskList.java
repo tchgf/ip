@@ -1,6 +1,7 @@
 package jeff.task;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,9 +21,9 @@ public class TaskList {
         this.tasks = new ArrayList<>(tasks);
     }
 
-    /** Adds the given task to the end of the list. */
-    public void add(Task task) {
-        tasks.add(task);
+    /** Adds each given task, in order, to the end of the list. */
+    public void add(Task... tasksToAdd) {
+        Collections.addAll(tasks, tasksToAdd);
     }
 
     /** Removes and returns the task at the given zero-based index. */
