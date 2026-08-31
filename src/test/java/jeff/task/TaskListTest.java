@@ -38,12 +38,31 @@ public class TaskListTest {
     }
 
     @Test
+    public void add_multipleTasks_addsAllInOrder() {
+        TaskList taskList = new TaskList();
+        Task first = new Todo("read book");
+        Task second = new Todo("write essay");
+
+        taskList.add(first, second);
+
+        assertEquals(List.of(first, second), taskList.getTasks());
+    }
+
+    @Test
+    public void add_noTasks_leavesListUnchanged() {
+        TaskList taskList = new TaskList();
+
+        taskList.add();
+
+        assertEquals(0, taskList.size());
+    }
+
+    @Test
     public void remove_returnsRemovedTaskAndDecreasesSize() {
         TaskList taskList = new TaskList();
         Task first = new Todo("read book");
         Task second = new Todo("write essay");
-        taskList.add(first);
-        taskList.add(second);
+        taskList.add(first, second);
 
         Task removed = taskList.remove(0);
 
@@ -57,8 +76,7 @@ public class TaskListTest {
         TaskList taskList = new TaskList();
         Task first = new Todo("read book");
         Task second = new Todo("write essay");
-        taskList.add(first);
-        taskList.add(second);
+        taskList.add(first, second);
 
         List<Task> tasks = taskList.getTasks();
 
@@ -71,9 +89,7 @@ public class TaskListTest {
         Task readBook = new Todo("read book");
         Task writeEssay = new Todo("write essay");
         Task returnBook = new Todo("return book");
-        taskList.add(readBook);
-        taskList.add(writeEssay);
-        taskList.add(returnBook);
+        taskList.add(readBook, writeEssay, returnBook);
 
         List<Task> matches = taskList.find("book");
 
