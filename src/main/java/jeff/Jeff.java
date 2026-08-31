@@ -26,21 +26,116 @@ public class Jeff {
     /** Handles all printing to, and reading from, the user. */
     private static final Ui ui = new Ui();
 
-    /** Stores the given task in {@code taskList} and prints the "added" confirmation. */
-    private static void addTask(Task task) {
+    static {
+        taskList.getTasks().addAll(storage.load());
+    }
+
+    /** Stores the given task in {@code taskList} and returns the "added" confirmation. */
+    private static String addTask(Task task) {
         taskList.add(task);
-        ui.showTaskAdded(task, taskList.size());
+        String response = ui.formatTaskAdded(task, taskList.size());
         storage.save(taskList.getTasks());
+        return response;
+    }
+
+    /** Returns the greeting message shown when Jeff starts up, without the console's ASCII banner. */
+    public static String getWelcomeMessage() {
+        return ui.formatGreeting();
     }
 
     /**
-     * Loads any previously saved tasks, greets the user, then repeatedly reads
-     * and executes commands until a "bye" command or end of input is reached.
+     * Parses and executes a single line of user input, updating {@code taskList}
+     * and {@code storage} as needed, and returns Jeff's response text. Shared by
+     * both the console UI in {@link #main} and the JavaFX GUI.
+     *
+     * @param input a raw line of user input, e.g. {@code "todo read book"}.
+     * @return the response text Jeff should show the user.
+     */
+    public static String getResponse(String input) {
+        Parser.Command command = Parser.parseCommandType(input);
+        String arguments = Parser.getArguments(input);
+
+        switch (command) {
+        case BYE:
+            return ui.formatBye();
+        case LIST:
+            return ui.formatTaskList(taskList.getTasks());
+        case MARK:
+            try {
+                Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
+                task.markAsDone();
+                String response = ui.formatTaskMarked(task);
+                storage.save(taskList.getTasks());
+                return response;
+            } catch (NumberFormatException e) {
+                return ui.formatError("Please provide a valid task number to mark.");
+            } catch (IndexOutOfBoundsException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case UNMARK:
+            try {
+                Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
+                task.unmarkAsDone();
+                String response = ui.formatTaskUnmarked(task);
+                storage.save(taskList.getTasks());
+                return response;
+            } catch (NumberFormatException e) {
+                return ui.formatError("Please provide a valid task number to unmark.");
+            } catch (IndexOutOfBoundsException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case DELETE:
+            try {
+                Task task = taskList.remove(Parser.parseTaskIndex(arguments, taskList.size()));
+                String response = ui.formatTaskRemoved(task, taskList.size());
+                storage.save(taskList.getTasks());
+                return response;
+            } catch (NumberFormatException e) {
+                return ui.formatError("Please provide a valid task number to delete.");
+            } catch (IndexOutOfBoundsException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case TODO:
+            try {
+                return addTask(new Todo(arguments));
+            } catch (IllegalArgumentException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case DEADLINE:
+            try {
+                String[] parts = Parser.splitDeadlineArgs(arguments);
+                return addTask(new Deadline(parts[0], parts[1]));
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return ui.formatError("A deadline needs a description and a /by date/time.");
+            } catch (IllegalArgumentException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case EVENT:
+            try {
+                String[] parts = Parser.splitEventArgs(arguments);
+                return addTask(new Event(parts[0], parts[1], parts[2]));
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return ui.formatError("An event needs a description, a /from and a /to date/time.");
+            } catch (IllegalArgumentException e) {
+                return ui.formatError(e.getMessage());
+            }
+        case FIND:
+            if (arguments.isEmpty()) {
+                return ui.formatError("Please provide a keyword to search for.");
+            }
+            return ui.formatMatchingTasks(taskList.find(arguments));
+        default:
+            return ui.formatError("I'm sorry, but I don't know what that command means.");
+        }
+    }
+
+    /**
+     * Greets the user, then repeatedly reads and executes commands until a
+     * "bye" command or end of input is reached.
      *
      * @param args unused; Jeff takes no command-line arguments.
      */
     public static void main(String[] args) {
-        taskList.getTasks().addAll(storage.load());
         ui.showWelcome();
 
         while (true) {
@@ -51,93 +146,12 @@ public class Jeff {
                 break;
             }
             ui.showLine();
-
-            Parser.Command command = Parser.parseCommandType(input);
-            String arguments = Parser.getArguments(input);
-
-            switch (command) {
-            case BYE:
-                ui.showBye();
-                ui.showLine();
-                ui.close();
-                return;
-            case LIST:
-                ui.showTaskList(taskList.getTasks());
-                break;
-            case MARK:
-                try {
-                    Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
-                    task.markAsDone();
-                    ui.showTaskMarked(task);
-                    storage.save(taskList.getTasks());
-                } catch (NumberFormatException e) {
-                    ui.showError("Please provide a valid task number to mark.");
-                } catch (IndexOutOfBoundsException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case UNMARK:
-                try {
-                    Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
-                    task.unmarkAsDone();
-                    ui.showTaskUnmarked(task);
-                    storage.save(taskList.getTasks());
-                } catch (NumberFormatException e) {
-                    ui.showError("Please provide a valid task number to unmark.");
-                } catch (IndexOutOfBoundsException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case DELETE:
-                try {
-                    Task task = taskList.remove(Parser.parseTaskIndex(arguments, taskList.size()));
-                    ui.showTaskRemoved(task, taskList.size());
-                    storage.save(taskList.getTasks());
-                } catch (NumberFormatException e) {
-                    ui.showError("Please provide a valid task number to delete.");
-                } catch (IndexOutOfBoundsException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case TODO:
-                try {
-                    addTask(new Todo(arguments));
-                } catch (IllegalArgumentException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case DEADLINE:
-                try {
-                    String[] parts = Parser.splitDeadlineArgs(arguments);
-                    addTask(new Deadline(parts[0], parts[1]));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    ui.showError("A deadline needs a description and a /by date/time.");
-                } catch (IllegalArgumentException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case EVENT:
-                try {
-                    String[] parts = Parser.splitEventArgs(arguments);
-                    addTask(new Event(parts[0], parts[1], parts[2]));
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    ui.showError("An event needs a description, a /from and a /to date/time.");
-                } catch (IllegalArgumentException e) {
-                    ui.showError(e.getMessage());
-                }
-                break;
-            case FIND:
-                if (arguments.isEmpty()) {
-                    ui.showError("Please provide a keyword to search for.");
-                } else {
-                    ui.showMatchingTasks(taskList.find(arguments));
-                }
-                break;
-            default:
-                ui.showError("I'm sorry, but I don't know what that command means.");
+            ui.showMessage(getResponse(input));
+            ui.showLine();
+            if (Parser.parseCommandType(input) == Parser.Command.BYE) {
                 break;
             }
-            ui.showLine();
         }
+        ui.close();
     }
 }
