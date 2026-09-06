@@ -21,6 +21,10 @@ import jeff.parser.Parser;
  * this class only wires up the window and forwards user input to it.
  */
 public class MainApp extends Application {
+    private static final double WINDOW_WIDTH = 480;
+    private static final double WINDOW_HEIGHT = 600;
+    private static final double SPACING = 8;
+
     @Override
     public void start(Stage stage) {
         TextArea transcript = new TextArea();
@@ -36,17 +40,17 @@ public class MainApp extends Application {
         sendButton.setOnAction(event -> sendInput.run());
         input.setOnAction(event -> sendInput.run());
 
-        HBox inputBar = new HBox(8, input, sendButton);
+        HBox inputBar = new HBox(SPACING, input, sendButton);
         HBox.setHgrow(input, Priority.ALWAYS);
 
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(8));
+        root.setPadding(new Insets(SPACING));
         root.setCenter(transcript);
         root.setBottom(inputBar);
-        BorderPane.setMargin(inputBar, new Insets(8, 0, 0, 0));
+        BorderPane.setMargin(inputBar, new Insets(SPACING, 0, 0, 0));
 
         stage.setTitle("Jeff");
-        stage.setScene(new Scene(root, 480, 600));
+        stage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
         stage.show();
     }
 
