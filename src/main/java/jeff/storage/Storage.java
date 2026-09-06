@@ -61,17 +61,17 @@ public class Storage {
             String description = parts[2];
             Task task;
             switch (parts[0]) {
-            case "T":
-                task = new Todo(description);
-                break;
-            case "D":
-                task = new Deadline(description, parts[3]);
-                break;
-            case "E":
-                task = new Event(description, parts[3], parts[4]);
-                break;
-            default:
-                return null;
+                case "T":
+                    task = new Todo(description);
+                    break;
+                case "D":
+                    task = new Deadline(description, parts[3]);
+                    break;
+                case "E":
+                    task = new Event(description, parts[3], parts[4]);
+                    break;
+                default:
+                    return null;
             }
             // Every case above either assigns task or breaks out of the method entirely
             // (the default case returns null), so task can never be null here. If a future

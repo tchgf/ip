@@ -60,8 +60,7 @@ public class ParserTest {
 
     @Test
     public void splitEventArgs_missingToSegment_throwsArrayIndexOutOfBoundsException() {
-        assertThrows(ArrayIndexOutOfBoundsException.class,
-                () -> Parser.splitEventArgs("trip /from 2019-11-01"));
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> Parser.splitEventArgs("trip /from 2019-11-01"));
     }
 
     @Test

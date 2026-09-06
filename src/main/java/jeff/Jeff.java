@@ -76,26 +76,26 @@ public class Jeff {
         String arguments = Parser.getArguments(input);
 
         switch (command) {
-        case BYE:
-            return ui.formatBye();
-        case LIST:
-            return ui.formatTaskList(taskList.getTasks());
-        case MARK:
-            return handleMark(arguments);
-        case UNMARK:
-            return handleUnmark(arguments);
-        case DELETE:
-            return handleDelete(arguments);
-        case TODO:
-            return handleTodo(arguments);
-        case DEADLINE:
-            return handleDeadline(arguments);
-        case EVENT:
-            return handleEvent(arguments);
-        case FIND:
-            return handleFind(arguments);
-        default:
-            return ui.formatError("I'm sorry, but I don't know what that command means.");
+            case BYE:
+                return ui.formatBye();
+            case LIST:
+                return ui.formatTaskList(taskList.getTasks());
+            case MARK:
+                return handleMark(arguments);
+            case UNMARK:
+                return handleUnmark(arguments);
+            case DELETE:
+                return handleDelete(arguments);
+            case TODO:
+                return handleTodo(arguments);
+            case DEADLINE:
+                return handleDeadline(arguments);
+            case EVENT:
+                return handleEvent(arguments);
+            case FIND:
+                return handleFind(arguments);
+            default:
+                return ui.formatError("I'm sorry, but I don't know what that command means.");
         }
     }
 
