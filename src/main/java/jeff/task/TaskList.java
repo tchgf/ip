@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Wraps the in-memory list of tasks, providing the operations needed to
@@ -69,12 +70,8 @@ public class TaskList {
 
     /** Returns the tasks whose description contains the given keyword, in list order. */
     public List<Task> find(String keyword) {
-        List<Task> matches = new ArrayList<>();
-        for (Task task : tasks) {
-            if (task.getDescription().contains(keyword)) {
-                matches.add(task);
-            }
-        }
-        return matches;
+        return tasks.stream()
+                .filter(task -> task.getDescription().contains(keyword))
+                .collect(Collectors.toList());
     }
 }

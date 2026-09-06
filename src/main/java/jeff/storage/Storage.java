@@ -3,8 +3,9 @@ package jeff.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import jeff.task.Deadline;
 import jeff.task.Event;
@@ -34,21 +35,18 @@ public class Storage {
      * prevent the rest of the file from loading.
      */
     public List<Task> load() {
-        List<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
-            return tasks;
+            return List.of();
         }
         try {
-            for (String line : Files.readAllLines(filePath)) {
-                Task task = parseLine(line);
-                if (task != null) {
-                    tasks.add(task);
-                }
-            }
+            return Files.readAllLines(filePath).stream()
+                    .map(this::parseLine)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             System.out.println("OOPS!!! Could not read saved tasks: " + e.getMessage());
+            return List.of();
         }
-        return tasks;
     }
 
     /**
@@ -99,11 +97,10 @@ public class Storage {
             if (filePath.getParent() != null) {
                 Files.createDirectories(filePath.getParent());
             }
-            StringBuilder content = new StringBuilder();
-            for (Task task : tasks) {
-                content.append(task.toSaveFormat()).append(System.lineSeparator());
-            }
-            Files.writeString(filePath, content.toString());
+            String content = tasks.stream()
+                    .map(task -> task.toSaveFormat() + System.lineSeparator())
+                    .collect(Collectors.joining());
+            Files.writeString(filePath, content);
         } catch (IOException e) {
             System.out.println("OOPS!!! Could not save tasks: " + e.getMessage());
         }

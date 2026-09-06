@@ -1,5 +1,7 @@
 package jeff.parser;
 
+import java.util.Arrays;
+
 /**
  * Makes sense of raw user input: figuring out which command was typed, and
  * pulling the pieces (description, dates, task number) out of its arguments.
@@ -18,12 +20,10 @@ public class Parser {
 
         /** Looks up the command matching the given (case-sensitive) first word of user input. */
         private static Command fromWord(String word) {
-            for (Command command : values()) {
-                if (command.word.equals(word)) {
-                    return command;
-                }
-            }
-            return UNKNOWN;
+            return Arrays.stream(values())
+                    .filter(command -> command.word.equals(word))
+                    .findFirst()
+                    .orElse(UNKNOWN);
         }
     }
 
