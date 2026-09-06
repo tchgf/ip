@@ -2,6 +2,8 @@ package jeff.ui;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import jeff.task.Task;
 
@@ -90,11 +92,10 @@ public class Ui {
 
     /** Builds the given header followed by each task, numbered from 1 in the given order. */
     private String formatNumberedTasks(String header, List<Task> tasks) {
-        StringBuilder message = new StringBuilder(header);
-        for (int i = 0; i < tasks.size(); i++) {
-            message.append("\n").append(i + 1).append(".").append(tasks.get(i));
-        }
-        return message.toString();
+        String body = IntStream.range(0, tasks.size())
+                .mapToObj(i -> "\n" + (i + 1) + "." + tasks.get(i))
+                .collect(Collectors.joining());
+        return header + body;
     }
 
     /** Prints confirmation that a task was added, e.g. after a "todo"/"deadline"/"event" command. */
