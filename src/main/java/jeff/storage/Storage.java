@@ -91,11 +91,10 @@ public class Storage {
             if (filePath.getParent() != null) {
                 Files.createDirectories(filePath.getParent());
             }
-            StringBuilder content = new StringBuilder();
-            for (Task task : tasks) {
-                content.append(task.toSaveFormat()).append(System.lineSeparator());
-            }
-            Files.writeString(filePath, content.toString());
+            String content = tasks.stream()
+                    .map(task -> task.toSaveFormat() + System.lineSeparator())
+                    .collect(Collectors.joining());
+            Files.writeString(filePath, content);
         } catch (IOException e) {
             System.out.println("OOPS!!! Could not save tasks: " + e.getMessage());
         }
