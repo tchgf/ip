@@ -74,6 +74,10 @@ public class Parser {
         if (index < 0 || index >= listSize) {
             throw new IndexOutOfBoundsException("Task " + numberPart + " doesn't exist.");
         }
+        // Postcondition: every path that could leave index out of [0, listSize) has
+        // already returned via the exception above, so this documents (and would catch,
+        // if a future edit breaks it) the guarantee this method makes to its callers.
+        assert index >= 0 && index < listSize : "index must be in range here";
         return index;
     }
 }

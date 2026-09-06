@@ -49,6 +49,11 @@ public class Event extends Task {
     /** Returns this event's status icon, description, and from/to dates, prefixed with "[E]". */
     @Override
     public String toString() {
+        // Same reasoning as Deadline.toString(): from and to are each set exactly once,
+        // in the constructor, by parseDate(), which either returns a valid LocalDate or
+        // throws before this object finishes constructing. So both should always be
+        // non-null on a fully constructed Event.
+        assert from != null && to != null : "from/to should never be null on a fully constructed Event";
         return "[E]" + super.toString() + " (from: " + from.format(PRINT_FORMAT)
                 + " to: " + to.format(PRINT_FORMAT) + ")";
     }

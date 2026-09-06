@@ -64,6 +64,10 @@ shadowJar {
 
 run {
     standardInput = System.in
+    // The JVM ignores `assert` statements unless assertions are explicitly enabled, so
+    // turn them on here; otherwise the assertions added throughout the code would never
+    // actually run when launched via Gradle.
+    enableAssertions = true
 }
 
 tasks.register('runGui', JavaExec) {
@@ -71,4 +75,5 @@ tasks.register('runGui', JavaExec) {
     description = 'Runs the JavaFX GUI for Jeff.'
     mainClass = 'jeff.gui.Main'
     classpath = sourceSets.main.runtimeClasspath
+    enableAssertions = true
 }
