@@ -1,8 +1,10 @@
 package jeff.task;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -24,16 +26,32 @@ public class TaskList {
 
     /** Adds each given task, in order, to the end of the list. */
     public void add(Task... tasksToAdd) {
+        // A null element here would sit silently in the list until it NPEs much later
+        // (e.g. when Storage or Ui tries to use it), far from where the real mistake was
+        // made. Every current caller (Jeff.addTask) only ever passes freshly constructed,
+        // non-null tasks, so a null getting through would indicate a bug in this code base,
+        // not something a user could trigger.
+        assert tasksToAdd != null : "tasksToAdd must not be null";
+        assert Arrays.stream(tasksToAdd).noneMatch(Objects::isNull) : "tasksToAdd must not contain null tasks";
         Collections.addAll(tasks, tasksToAdd);
     }
 
     /** Removes and returns the task at the given zero-based index. */
     public Task remove(int index) {
+        // By the time this is called, Jeff has already turned the user's 1-based task
+        // number into a 0-based index via Parser.parseTaskIndex, which throws
+        // IndexOutOfBoundsException on anything out of range. So an out-of-range index
+        // reaching here would mean a caller skipped that validation, which is a
+        // programming error rather than something a user typed.
+        assert index >= 0 && index < tasks.size() : "index should already be range-checked by the caller";
         return tasks.remove(index);
     }
 
     /** Returns the task at the given zero-based index. */
     public Task get(int index) {
+        // Same assumption as remove(int): the caller is expected to have range-checked
+        // index already (see Parser.parseTaskIndex).
+        assert index >= 0 && index < tasks.size() : "index should already be range-checked by the caller";
         return tasks.get(index);
     }
 

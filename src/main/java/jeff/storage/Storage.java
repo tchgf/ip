@@ -73,6 +73,12 @@ public class Storage {
             default:
                 return null;
             }
+            // Every case above either assigns task or breaks out of the method entirely
+            // (the default case returns null), so task can never be null here. If a future
+            // case is added that forgets to assign task, or the switch is refactored to
+            // fall through incorrectly, this catches that bug immediately instead of
+            // letting a null task silently reach markAsDone() below.
+            assert task != null : "task should have been assigned by one of the cases above";
             if (isDone) {
                 task.markAsDone();
             }

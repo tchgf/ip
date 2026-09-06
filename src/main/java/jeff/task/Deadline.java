@@ -44,6 +44,12 @@ public class Deadline extends Task {
     /** Returns this deadline's status icon, description, and by date, prefixed with "[D]". */
     @Override
     public String toString() {
+        // by is set exactly once, in the constructor, and parseDate() either returns a
+        // valid LocalDate or throws before this object finishes constructing. So by should
+        // never be null while this object exists; if it were, that would mean this
+        // invariant was broken (e.g. by future code adding a way to clear it), not that
+        // the user typed something invalid.
+        assert by != null : "by should never be null on a fully constructed Deadline";
         return "[D]" + super.toString() + " (by: " + by.format(PRINT_FORMAT) + ")";
     }
 
