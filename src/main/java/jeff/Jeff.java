@@ -94,6 +94,8 @@ public class Jeff {
                 return handleEvent(arguments);
             case FIND:
                 return handleFind(arguments);
+            case SORT:
+                return handleSort();
             default:
                 return ui.formatError("I'm sorry, but I don't know what that command means.");
         }
@@ -170,6 +172,13 @@ public class Jeff {
             return ui.formatError("Please provide a keyword to search for.");
         }
         return ui.formatMatchingTasks(taskList.find(arguments));
+    }
+
+    /** Sorts {@code taskList} chronologically by date and returns the resulting list. */
+    private static String handleSort() {
+        taskList.sortByDate();
+        storage.save(taskList.getTasks());
+        return ui.formatSortedTasks(taskList.getTasks());
     }
 
     /**

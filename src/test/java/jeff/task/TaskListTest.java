@@ -103,4 +103,43 @@ public class TaskListTest {
 
         assertEquals(List.of(), taskList.find("essay"));
     }
+
+    @Test
+    public void sortByDate_mixOfTaskTypes_sortsByDateThenKeepsUndatedTasksInOriginalOrder() {
+        TaskList taskList = new TaskList();
+        Task lateTodo = new Todo("z todo");
+        Task lateDeadline = new Deadline("late deadline", "2025-05-01");
+        Task earlyTodo = new Todo("a todo");
+        Task earlyEvent = new Event("early event", "2025-01-01", "2025-01-05");
+        Task midDeadline = new Deadline("mid deadline", "2025-02-01");
+        taskList.add(lateTodo, lateDeadline, earlyTodo, earlyEvent, midDeadline);
+
+        taskList.sortByDate();
+
+        assertEquals(List.of(earlyEvent, midDeadline, lateDeadline, lateTodo, earlyTodo), taskList.getTasks());
+    }
+
+    @Test
+    public void sortByDate_noDatedTasks_keepsOriginalOrder() {
+        TaskList taskList = new TaskList();
+        Task first = new Todo("z todo");
+        Task second = new Todo("a todo");
+        taskList.add(first, second);
+
+        taskList.sortByDate();
+
+        assertEquals(List.of(first, second), taskList.getTasks());
+    }
+
+    @Test
+    public void sortByDate_tiedDates_keepsOriginalRelativeOrder() {
+        TaskList taskList = new TaskList();
+        Task firstDeadline = new Deadline("first added", "2025-06-01");
+        Task secondDeadline = new Deadline("second added", "2025-06-01");
+        taskList.add(secondDeadline, firstDeadline);
+
+        taskList.sortByDate();
+
+        assertEquals(List.of(secondDeadline, firstDeadline), taskList.getTasks());
+    }
 }

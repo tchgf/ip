@@ -3,6 +3,7 @@ package jeff.task;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 /**
  * A task that starts on a specific date and ends on a specific date,
@@ -56,6 +57,12 @@ public class Event extends Task {
         assert from != null && to != null : "from/to should never be null on a fully constructed Event";
         return "[E]" + super.toString() + " (from: " + from.format(PRINT_FORMAT)
                 + " to: " + to.format(PRINT_FORMAT) + ")";
+    }
+
+    /** Returns this event's start date, since that's what an event should be sorted by. */
+    @Override
+    public Optional<LocalDate> getChronologicalDate() {
+        return Optional.of(from);
     }
 
     /** Returns this event's data encoded for {@link jeff.storage.Storage}, prefixed with "E". */

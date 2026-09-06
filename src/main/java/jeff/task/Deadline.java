@@ -3,6 +3,7 @@ package jeff.task;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Optional;
 
 /**
  * A task that needs to be done by a specific date,
@@ -51,6 +52,12 @@ public class Deadline extends Task {
         // the user typed something invalid.
         assert by != null : "by should never be null on a fully constructed Deadline";
         return "[D]" + super.toString() + " (by: " + by.format(PRINT_FORMAT) + ")";
+    }
+
+    /** Returns this deadline's due date, since that's what a deadline should be sorted by. */
+    @Override
+    public Optional<LocalDate> getChronologicalDate() {
+        return Optional.of(by);
     }
 
     /** Returns this deadline's data encoded for {@link jeff.storage.Storage}, prefixed with "D". */

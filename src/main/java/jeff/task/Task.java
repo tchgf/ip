@@ -1,5 +1,8 @@
 package jeff.task;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 /**
  * A single to-do item with a description and a done/not-done status.
  * {@link Todo}, {@link Deadline}, and {@link Event} extend this with their
@@ -31,6 +34,15 @@ public class Task {
     /** Returns this task's description. */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns the date this task should be ordered by when sorting tasks chronologically,
+     * or empty if it has no date (e.g. a plain to-do). {@link Deadline} and {@link Event}
+     * override this with their own date.
+     */
+    public Optional<LocalDate> getChronologicalDate() {
+        return Optional.empty();
     }
 
     /** Marks this task as done. */

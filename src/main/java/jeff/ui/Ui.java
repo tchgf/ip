@@ -90,6 +90,16 @@ public class Ui {
         return formatNumberedTasks("Here are the matching tasks in your list:", tasks);
     }
 
+    /** Prints every given task, numbered in order, after a "sort" command reordered them. */
+    public void showSortedTasks(List<Task> tasks) {
+        showMessage(formatSortedTasks(tasks));
+    }
+
+    /** Builds the numbered list of every given task, in order, after a "sort" command reordered them. */
+    public String formatSortedTasks(List<Task> tasks) {
+        return formatNumberedTasks("Sorted your tasks chronologically by date:", tasks);
+    }
+
     /** Builds the given header followed by each task, numbered from 1 in the given order. */
     private String formatNumberedTasks(String header, List<Task> tasks) {
         String body = IntStream.range(0, tasks.size())

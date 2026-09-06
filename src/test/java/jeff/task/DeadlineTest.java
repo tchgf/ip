@@ -3,6 +3,8 @@ package jeff.task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 
 public class DeadlineTest {
@@ -41,5 +43,11 @@ public class DeadlineTest {
     public void toSaveFormat_encodesDateInIsoFormat() {
         Deadline deadline = new Deadline("return book", "2019-10-15");
         assertEquals("D | 0 | return book | 2019-10-15", deadline.toSaveFormat());
+    }
+
+    @Test
+    public void getChronologicalDate_returnsByDate() {
+        Deadline deadline = new Deadline("return book", "2019-10-15");
+        assertEquals(LocalDate.of(2019, 10, 15), deadline.getChronologicalDate().orElseThrow());
     }
 }

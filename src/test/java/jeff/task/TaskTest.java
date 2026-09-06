@@ -2,6 +2,7 @@ package jeff.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,5 +54,11 @@ public class TaskTest {
         Task task = new Task("read book");
         task.markAsDone();
         assertEquals("1 | read book", task.toSaveFormat());
+    }
+
+    @Test
+    public void getChronologicalDate_plainTask_isEmpty() {
+        Task task = new Task("read book");
+        assertTrue(task.getChronologicalDate().isEmpty());
     }
 }

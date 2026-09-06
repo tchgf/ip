@@ -3,6 +3,8 @@ package jeff.task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 
 public class EventTest {
@@ -38,5 +40,11 @@ public class EventTest {
     public void toSaveFormat_encodesBothDatesInIsoFormat() {
         Event event = new Event("trip", "2019-11-01", "2019-11-05");
         assertEquals("E | 0 | trip | 2019-11-01 | 2019-11-05", event.toSaveFormat());
+    }
+
+    @Test
+    public void getChronologicalDate_returnsFromDate() {
+        Event event = new Event("trip", "2019-11-01", "2019-11-05");
+        assertEquals(LocalDate.of(2019, 11, 1), event.getChronologicalDate().orElseThrow());
     }
 }
