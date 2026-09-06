@@ -1,5 +1,7 @@
 package jeff;
 
+import java.util.function.IntFunction;
+
 import jeff.parser.Parser;
 import jeff.storage.Storage;
 import jeff.task.Deadline;
@@ -38,6 +40,24 @@ public class Jeff {
         return response;
     }
 
+    /**
+     * Resolves {@code arguments} to a zero-based task index and runs {@code command} on it,
+     * translating the two ways resolution can fail (a malformed or an out-of-range task
+     * number) into one of Jeff's usual "OOPS!!!"-prefixed error messages. Shared by the
+     * "mark", "unmark", and "delete" commands, which differ only in what they do with the
+     * resolved index and in {@code actionWord}, the word naming them in the
+     * malformed-number error message.
+     */
+    private static String executeTaskCommand(String arguments, String actionWord, IntFunction<String> command) {
+        try {
+            return command.apply(Parser.parseTaskIndex(arguments, taskList.size()));
+        } catch (NumberFormatException e) {
+            return ui.formatError("Please provide a valid task number to " + actionWord + ".");
+        } catch (IndexOutOfBoundsException e) {
+            return ui.formatError(e.getMessage());
+        }
+    }
+
     /** Returns the greeting message shown when Jeff starts up, without the console's ASCII banner. */
     public static String getWelcomeMessage() {
         return ui.formatGreeting();
@@ -61,40 +81,28 @@ public class Jeff {
         case LIST:
             return ui.formatTaskList(taskList.getTasks());
         case MARK:
-            try {
-                Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
+            return executeTaskCommand(arguments, "mark", index -> {
+                Task task = taskList.get(index);
                 task.markAsDone();
                 String response = ui.formatTaskMarked(task);
                 storage.save(taskList.getTasks());
                 return response;
-            } catch (NumberFormatException e) {
-                return ui.formatError("Please provide a valid task number to mark.");
-            } catch (IndexOutOfBoundsException e) {
-                return ui.formatError(e.getMessage());
-            }
+            });
         case UNMARK:
-            try {
-                Task task = taskList.get(Parser.parseTaskIndex(arguments, taskList.size()));
+            return executeTaskCommand(arguments, "unmark", index -> {
+                Task task = taskList.get(index);
                 task.unmarkAsDone();
                 String response = ui.formatTaskUnmarked(task);
                 storage.save(taskList.getTasks());
                 return response;
-            } catch (NumberFormatException e) {
-                return ui.formatError("Please provide a valid task number to unmark.");
-            } catch (IndexOutOfBoundsException e) {
-                return ui.formatError(e.getMessage());
-            }
+            });
         case DELETE:
-            try {
-                Task task = taskList.remove(Parser.parseTaskIndex(arguments, taskList.size()));
+            return executeTaskCommand(arguments, "delete", index -> {
+                Task task = taskList.remove(index);
                 String response = ui.formatTaskRemoved(task, taskList.size());
                 storage.save(taskList.getTasks());
                 return response;
-            } catch (NumberFormatException e) {
-                return ui.formatError("Please provide a valid task number to delete.");
-            } catch (IndexOutOfBoundsException e) {
-                return ui.formatError(e.getMessage());
-            }
+            });
         case TODO:
             try {
                 return addTask(new Todo(arguments));
