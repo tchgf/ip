@@ -81,60 +81,95 @@ public class Jeff {
         case LIST:
             return ui.formatTaskList(taskList.getTasks());
         case MARK:
-            return executeTaskCommand(arguments, "mark", index -> {
-                Task task = taskList.get(index);
-                task.markAsDone();
-                String response = ui.formatTaskMarked(task);
-                storage.save(taskList.getTasks());
-                return response;
-            });
+            return handleMark(arguments);
         case UNMARK:
-            return executeTaskCommand(arguments, "unmark", index -> {
-                Task task = taskList.get(index);
-                task.unmarkAsDone();
-                String response = ui.formatTaskUnmarked(task);
-                storage.save(taskList.getTasks());
-                return response;
-            });
+            return handleUnmark(arguments);
         case DELETE:
-            return executeTaskCommand(arguments, "delete", index -> {
-                Task task = taskList.remove(index);
-                String response = ui.formatTaskRemoved(task, taskList.size());
-                storage.save(taskList.getTasks());
-                return response;
-            });
+            return handleDelete(arguments);
         case TODO:
-            try {
-                return addTask(new Todo(arguments));
-            } catch (IllegalArgumentException e) {
-                return ui.formatError(e.getMessage());
-            }
+            return handleTodo(arguments);
         case DEADLINE:
-            try {
-                String[] parts = Parser.splitDeadlineArgs(arguments);
-                return addTask(new Deadline(parts[0], parts[1]));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return ui.formatError("A deadline needs a description and a /by date/time.");
-            } catch (IllegalArgumentException e) {
-                return ui.formatError(e.getMessage());
-            }
+            return handleDeadline(arguments);
         case EVENT:
-            try {
-                String[] parts = Parser.splitEventArgs(arguments);
-                return addTask(new Event(parts[0], parts[1], parts[2]));
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return ui.formatError("An event needs a description, a /from and a /to date/time.");
-            } catch (IllegalArgumentException e) {
-                return ui.formatError(e.getMessage());
-            }
+            return handleEvent(arguments);
         case FIND:
-            if (arguments.isEmpty()) {
-                return ui.formatError("Please provide a keyword to search for.");
-            }
-            return ui.formatMatchingTasks(taskList.find(arguments));
+            return handleFind(arguments);
         default:
             return ui.formatError("I'm sorry, but I don't know what that command means.");
         }
+    }
+
+    /** Marks the task named by {@code arguments} as done and returns the confirmation. */
+    private static String handleMark(String arguments) {
+        return executeTaskCommand(arguments, "mark", index -> {
+            Task task = taskList.get(index);
+            task.markAsDone();
+            String response = ui.formatTaskMarked(task);
+            storage.save(taskList.getTasks());
+            return response;
+        });
+    }
+
+    /** Marks the task named by {@code arguments} as not done and returns the confirmation. */
+    private static String handleUnmark(String arguments) {
+        return executeTaskCommand(arguments, "unmark", index -> {
+            Task task = taskList.get(index);
+            task.unmarkAsDone();
+            String response = ui.formatTaskUnmarked(task);
+            storage.save(taskList.getTasks());
+            return response;
+        });
+    }
+
+    /** Removes the task named by {@code arguments} from {@code taskList} and returns the confirmation. */
+    private static String handleDelete(String arguments) {
+        return executeTaskCommand(arguments, "delete", index -> {
+            Task task = taskList.remove(index);
+            String response = ui.formatTaskRemoved(task, taskList.size());
+            storage.save(taskList.getTasks());
+            return response;
+        });
+    }
+
+    /** Adds a {@link Todo} built from {@code arguments} and returns the "added" confirmation. */
+    private static String handleTodo(String arguments) {
+        try {
+            return addTask(new Todo(arguments));
+        } catch (IllegalArgumentException e) {
+            return ui.formatError(e.getMessage());
+        }
+    }
+
+    /** Adds a {@link Deadline} built from {@code arguments} and returns the "added" confirmation. */
+    private static String handleDeadline(String arguments) {
+        try {
+            String[] parts = Parser.splitDeadlineArgs(arguments);
+            return addTask(new Deadline(parts[0], parts[1]));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return ui.formatError("A deadline needs a description and a /by date/time.");
+        } catch (IllegalArgumentException e) {
+            return ui.formatError(e.getMessage());
+        }
+    }
+
+    /** Adds an {@link Event} built from {@code arguments} and returns the "added" confirmation. */
+    private static String handleEvent(String arguments) {
+        try {
+            String[] parts = Parser.splitEventArgs(arguments);
+            return addTask(new Event(parts[0], parts[1], parts[2]));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return ui.formatError("An event needs a description, a /from and a /to date/time.");
+        } catch (IllegalArgumentException e) {
+            return ui.formatError(e.getMessage());
+        }
+    }
+
+    /** Returns the tasks whose description contains the keyword in {@code arguments}. */
+    private static String handleFind(String arguments) {
+        if (arguments.isEmpty()) {
+            return ui.formatError("Please provide a keyword to search for.");
+        }
+        return ui.formatMatchingTasks(taskList.find(arguments));
     }
 
     /**
