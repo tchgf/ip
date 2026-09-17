@@ -18,6 +18,7 @@ public class ParserTest {
         assertEquals(Parser.Command.DEADLINE, Parser.parseCommandType("deadline return book /by 2019-10-15"));
         assertEquals(Parser.Command.EVENT, Parser.parseCommandType("event trip /from 2019-11-01 /to 2019-11-05"));
         assertEquals(Parser.Command.FIND, Parser.parseCommandType("find book"));
+        assertEquals(Parser.Command.SORT, Parser.parseCommandType("sort"));
     }
 
     @Test
@@ -53,6 +54,12 @@ public class ParserTest {
     }
 
     @Test
+    public void splitDeadlineArgs_byLabelWithNothingAfterIt_returnsEmptyByField() {
+        String[] parts = Parser.splitDeadlineArgs("return book /by");
+        assertArrayEquals(new String[] { "return book", "" }, parts);
+    }
+
+    @Test
     public void splitEventArgs_validArguments_splitsIntoDescriptionFromAndTo() {
         String[] parts = Parser.splitEventArgs("trip /from 2019-11-01 /to 2019-11-05");
         assertArrayEquals(new String[] { "trip", "2019-11-01", "2019-11-05" }, parts);
@@ -61,6 +68,11 @@ public class ParserTest {
     @Test
     public void splitEventArgs_missingToSegment_throwsArrayIndexOutOfBoundsException() {
         assertThrows(ArrayIndexOutOfBoundsException.class, () -> Parser.splitEventArgs("trip /from 2019-11-01"));
+    }
+
+    @Test
+    public void splitEventArgs_missingBothSegments_throwsArrayIndexOutOfBoundsException() {
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> Parser.splitEventArgs("trip"));
     }
 
     @Test
@@ -78,5 +90,15 @@ public class ParserTest {
     public void parseTaskIndex_outOfRange_throwsIndexOutOfBoundsException() {
         assertThrows(IndexOutOfBoundsException.class, () -> Parser.parseTaskIndex("0", 3));
         assertThrows(IndexOutOfBoundsException.class, () -> Parser.parseTaskIndex("4", 3));
+    }
+
+    @Test
+    public void parseTaskIndex_negativeNumber_throwsIndexOutOfBoundsException() {
+        assertThrows(IndexOutOfBoundsException.class, () -> Parser.parseTaskIndex("-5", 3));
+    }
+
+    @Test
+    public void parseTaskIndex_emptyString_throwsNumberFormatException() {
+        assertThrows(NumberFormatException.class, () -> Parser.parseTaskIndex("", 3));
     }
 }

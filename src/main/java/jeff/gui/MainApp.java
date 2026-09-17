@@ -19,6 +19,7 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import jeff.Jeff;
 import jeff.parser.Parser;
+import jeff.storage.Storage;
 
 /**
  * The JavaFX GUI for Jeff, styled like a messaging app: a colorful header bar,
@@ -40,12 +41,13 @@ public class MainApp extends Application {
 
     private final Image userImage = new Image(getClass().getResourceAsStream("/images/user.png"));
     private final Image jeffImage = new Image(getClass().getResourceAsStream("/images/robot.png"));
+    private final Jeff jeff = new Jeff(new Storage(Jeff.DEFAULT_SAVE_FILE_PATH));
 
     @Override
     public void start(Stage stage) {
         VBox dialogContainer = new VBox(SPACING);
         dialogContainer.setPadding(new Insets(SPACING));
-        dialogContainer.getChildren().add(buildReplyDialog(Jeff.getWelcomeMessage()));
+        dialogContainer.getChildren().add(buildReplyDialog(jeff.getWelcomeMessage()));
 
         ScrollPane scrollPane = new ScrollPane(dialogContainer);
         scrollPane.setFitToWidth(true);
@@ -110,7 +112,7 @@ public class MainApp extends Application {
         }
 
         dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(text, userImage), buildReplyDialog(Jeff.getResponse(text)));
+                DialogBox.getUserDialog(text, userImage), buildReplyDialog(jeff.getResponse(text)));
         input.clear();
 
         if (Parser.parseCommandType(text) == Parser.Command.BYE) {

@@ -84,4 +84,51 @@ public class StorageTest {
         assertEquals("T | 1 | write essay", loaded.get(0).toSaveFormat());
         assertTrue(storage.getLastLoadWarning().isPresent());
     }
+
+    @Test
+    public void load_allLinesValid_noLoadWarningIsSet() throws IOException {
+        Path file = tempDir.resolve("jeff.txt");
+        Files.writeString(file, "T | 0 | read book\n");
+        Storage storage = new Storage(file.toString());
+
+        storage.load();
+
+        assertEquals(Optional.empty(), storage.getLastLoadWarning());
+    }
+
+    @Test
+    public void load_deadlineLineWithInvalidDate_isSkippedButOtherLinesStillLoad() throws IOException {
+        Path file = tempDir.resolve("jeff.txt");
+        Files.writeString(file, "D | 0 | bad date | not-a-date\nT | 0 | read book\n");
+        Storage storage = new Storage(file.toString());
+
+        List<Task> loaded = storage.load();
+
+        assertEquals(1, loaded.size());
+        assertEquals("T | 0 | read book", loaded.get(0).toSaveFormat());
+        assertTrue(storage.getLastLoadWarning().isPresent());
+    }
+
+    @Test
+    public void load_pathIsADirectoryNotAFile_setsLoadWarningAndReturnsEmptyList() throws IOException {
+        Path directory = tempDir.resolve("jeff.txt");
+        Files.createDirectory(directory);
+        Storage storage = new Storage(directory.toString());
+
+        List<Task> loaded = storage.load();
+
+        assertEquals(List.of(), loaded);
+        assertTrue(storage.getLastLoadWarning().isPresent());
+    }
+
+    @Test
+    public void save_pathIsADirectoryNotAFile_returnsErrorMessage() throws IOException {
+        Path directory = tempDir.resolve("jeff.txt");
+        Files.createDirectory(directory);
+        Storage storage = new Storage(directory.toString());
+
+        Optional<String> saveError = storage.save(List.of(new Todo("read book")));
+
+        assertTrue(saveError.isPresent());
+    }
 }

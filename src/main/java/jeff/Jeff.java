@@ -13,28 +13,33 @@ import jeff.task.Todo;
 import jeff.ui.Ui;
 
 /**
- * Entry point for the Jeff chatbot. Wires together {@link Ui}, {@link Storage},
- * and {@link TaskList}, and drives the read-parse-execute loop that reads a
- * command from the user, asks {@link Parser} to make sense of it, and acts on it.
+ * The Jeff chatbot. Wires together {@link Ui}, {@link Storage}, and {@link TaskList},
+ * and drives the read-parse-execute cycle that reads a command from the user, asks
+ * {@link Parser} to make sense of it, and acts on it. An instance owns one
+ * conversation's worth of state, so tests can create one against a throwaway
+ * {@link Storage} instead of touching the real save file.
  */
 public class Jeff {
-    private static final String SAVE_FILE_PATH = "./data/jeff.txt";
+    /** Where {@link #main} and the JavaFX GUI persist tasks between runs. */
+    public static final String DEFAULT_SAVE_FILE_PATH = "./data/jeff.txt";
 
     /** Every task the user has added so far, in order. */
-    private static final TaskList taskList = new TaskList();
+    private final TaskList taskList;
 
-    /** Persists {@code taskList} to, and restores it from, {@link #SAVE_FILE_PATH}. */
-    private static final Storage storage = new Storage(SAVE_FILE_PATH);
+    /** Persists {@code taskList} to, and restores it from, disk. */
+    private final Storage storage;
 
     /** Handles all printing to, and reading from, the user. */
-    private static final Ui ui = new Ui();
+    private final Ui ui = new Ui();
 
-    static {
-        taskList.getTasks().addAll(storage.load());
+    /** Creates a Jeff that persists its tasks via the given {@link Storage}, loading any it already has. */
+    public Jeff(Storage storage) {
+        this.storage = storage;
+        this.taskList = new TaskList(storage.load());
     }
 
     /** Stores the given task in {@code taskList} and returns the "added" confirmation. */
-    private static String addTask(Task task) {
+    private String addTask(Task task) {
         taskList.add(task);
         String response = ui.formatTaskAdded(task, taskList.size());
         return withSaveWarning(response);
@@ -46,7 +51,7 @@ public class Jeff {
      * their change was not actually persisted instead of it only reaching a console
      * nobody may be looking at (e.g. when running the GUI).
      */
-    private static String withSaveWarning(String response) {
+    private String withSaveWarning(String response) {
         Optional<String> saveError = storage.save(taskList.getTasks());
         return saveError.map(error -> response + "\n" + ui.formatError(error)).orElse(response);
     }
@@ -59,7 +64,7 @@ public class Jeff {
      * resolved index and in {@code actionWord}, the word naming them in the
      * malformed-number error message.
      */
-    private static String executeTaskCommand(String arguments, String actionWord, IntFunction<String> command) {
+    private String executeTaskCommand(String arguments, String actionWord, IntFunction<String> command) {
         try {
             return command.apply(Parser.parseTaskIndex(arguments, taskList.size()));
         } catch (NumberFormatException e) {
@@ -75,7 +80,7 @@ public class Jeff {
      * file was unreadable, or some of its lines were corrupted), a warning about that
      * is appended so the user isn't left wondering where their tasks went.
      */
-    public static String getWelcomeMessage() {
+    public String getWelcomeMessage() {
         String greeting = ui.formatGreeting();
         return storage.getLastLoadWarning()
                 .map(warning -> greeting + "\n" + ui.formatError(warning))
@@ -90,7 +95,7 @@ public class Jeff {
      * @param input a raw line of user input, e.g. {@code "todo read book"}.
      * @return the response text Jeff should show the user.
      */
-    public static String getResponse(String input) {
+    public String getResponse(String input) {
         Parser.Command command = Parser.parseCommandType(input);
         String arguments = Parser.getArguments(input);
 
@@ -121,7 +126,7 @@ public class Jeff {
     }
 
     /** Marks the task named by {@code arguments} as done and returns the confirmation. */
-    private static String handleMark(String arguments) {
+    private String handleMark(String arguments) {
         return executeTaskCommand(arguments, "mark", index -> {
             Task task = taskList.get(index);
             task.markAsDone();
@@ -130,7 +135,7 @@ public class Jeff {
     }
 
     /** Marks the task named by {@code arguments} as not done and returns the confirmation. */
-    private static String handleUnmark(String arguments) {
+    private String handleUnmark(String arguments) {
         return executeTaskCommand(arguments, "unmark", index -> {
             Task task = taskList.get(index);
             task.unmarkAsDone();
@@ -139,7 +144,7 @@ public class Jeff {
     }
 
     /** Removes the task named by {@code arguments} from {@code taskList} and returns the confirmation. */
-    private static String handleDelete(String arguments) {
+    private String handleDelete(String arguments) {
         return executeTaskCommand(arguments, "delete", index -> {
             Task task = taskList.remove(index);
             return withSaveWarning(ui.formatTaskRemoved(task, taskList.size()));
@@ -147,7 +152,7 @@ public class Jeff {
     }
 
     /** Adds a {@link Todo} built from {@code arguments} and returns the "added" confirmation. */
-    private static String handleTodo(String arguments) {
+    private String handleTodo(String arguments) {
         try {
             return addTask(new Todo(arguments));
         } catch (IllegalArgumentException e) {
@@ -156,7 +161,7 @@ public class Jeff {
     }
 
     /** Adds a {@link Deadline} built from {@code arguments} and returns the "added" confirmation. */
-    private static String handleDeadline(String arguments) {
+    private String handleDeadline(String arguments) {
         try {
             String[] parts = Parser.splitDeadlineArgs(arguments);
             return addTask(new Deadline(parts[0], parts[1]));
@@ -168,7 +173,7 @@ public class Jeff {
     }
 
     /** Adds an {@link Event} built from {@code arguments} and returns the "added" confirmation. */
-    private static String handleEvent(String arguments) {
+    private String handleEvent(String arguments) {
         try {
             String[] parts = Parser.splitEventArgs(arguments);
             return addTask(new Event(parts[0], parts[1], parts[2]));
@@ -180,7 +185,7 @@ public class Jeff {
     }
 
     /** Returns the tasks whose description contains the keyword in {@code arguments}. */
-    private static String handleFind(String arguments) {
+    private String handleFind(String arguments) {
         if (arguments.isEmpty()) {
             return ui.formatError("Please provide a keyword to search for.");
         }
@@ -188,7 +193,7 @@ public class Jeff {
     }
 
     /** Sorts {@code taskList} chronologically by date and returns the resulting list. */
-    private static String handleSort() {
+    private String handleSort() {
         taskList.sortByDate();
         return withSaveWarning(ui.formatSortedTasks(taskList.getTasks()));
     }
@@ -196,10 +201,8 @@ public class Jeff {
     /**
      * Greets the user, then repeatedly reads and executes commands until a
      * "bye" command or end of input is reached.
-     *
-     * @param args unused; Jeff takes no command-line arguments.
      */
-    public static void main(String[] args) {
+    private void run() {
         ui.showWelcome(getWelcomeMessage());
 
         while (true) {
@@ -217,5 +220,14 @@ public class Jeff {
             }
         }
         ui.close();
+    }
+
+    /**
+     * Starts a console-driven Jeff that persists to {@link #DEFAULT_SAVE_FILE_PATH}.
+     *
+     * @param args unused; Jeff takes no command-line arguments.
+     */
+    public static void main(String[] args) {
+        new Jeff(new Storage(DEFAULT_SAVE_FILE_PATH)).run();
     }
 }

@@ -2,6 +2,7 @@ package jeff.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -62,6 +63,13 @@ public class UiTest {
     }
 
     @Test
+    public void formatGreeting_mentionsJeffsName() {
+        String greeting = new Ui().formatGreeting();
+        assertTrue(greeting.contains("Hello! I'm Jeff"));
+        assertTrue(greeting.contains("What can I do for you today?"));
+    }
+
+    @Test
     public void showBye_printsFarewellMessage() {
         new Ui().showBye();
         assertTrue(output().contains("Bye for now!"));
@@ -112,6 +120,24 @@ public class UiTest {
     }
 
     @Test
+    public void showSortedTasks_emptyList_printsHeaderOnly() {
+        new Ui().showSortedTasks(List.of());
+        assertTrue(output().contains("All tidied up and sorted chronologically by date:"));
+    }
+
+    @Test
+    public void showSortedTasks_numbersTasksInOrder() {
+        Task first = new Todo("read book");
+        Task second = new Todo("write essay");
+        new Ui().showSortedTasks(List.of(first, second));
+
+        String printed = output();
+        assertTrue(printed.contains("All tidied up and sorted chronologically by date:"));
+        assertTrue(printed.contains("1.[T][ ] read book"));
+        assertTrue(printed.contains("2.[T][ ] write essay"));
+    }
+
+    @Test
     public void showTaskAdded_includesTaskAndCount() {
         new Ui().showTaskAdded(new Todo("read book"), 2);
         String printed = output();
@@ -156,5 +182,15 @@ public class UiTest {
         Ui ui = new Ui();
 
         assertNull(ui.readCommand());
+    }
+
+    @Test
+    public void close_thenReadCommand_throwsIllegalStateException() {
+        System.setIn(new ByteArrayInputStream("todo read book\n".getBytes(StandardCharsets.UTF_8)));
+        Ui ui = new Ui();
+
+        ui.close();
+
+        assertThrows(IllegalStateException.class, ui::readCommand);
     }
 }
