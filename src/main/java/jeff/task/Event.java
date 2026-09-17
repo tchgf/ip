@@ -21,12 +21,16 @@ public class Event extends Task {
      * @param description what the task is; must not be null or blank.
      * @param from the start date, in "yyyy-mm-dd" format; must not be null, blank, or wrongly formatted.
      * @param to the end date, in "yyyy-mm-dd" format; must not be null, blank, or wrongly formatted.
-     * @throws IllegalArgumentException if description, from, or to is invalid.
+     * @throws IllegalArgumentException if description or either date is invalid, or if
+     *     {@code from} is after {@code to}.
      */
     public Event(String description, String from, String to) {
         super(description);
         this.from = parseDate(from, "/from");
         this.to = parseDate(to, "/to");
+        if (this.from.isAfter(this.to)) {
+            throw new IllegalArgumentException("An event's /from date can't be after its /to date.");
+        }
     }
 
     /**

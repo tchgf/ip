@@ -32,8 +32,13 @@ public class Ui {
         System.out.println(DIVIDER);
     }
 
-    /** Prints the startup banner and greeting. */
-    public void showWelcome() {
+    /**
+     * Prints the startup banner followed by {@code greeting}. The greeting is passed in
+     * (rather than built here) so the caller (see {@link jeff.Jeff#getWelcomeMessage()})
+     * can fold in anything the user needs to know right away, e.g. a warning that their
+     * saved tasks failed to load.
+     */
+    public void showWelcome(String greeting) {
         String banner = "     _  _____  _____  _____ \n"
                 + "    | || ____||  ___||  ___|\n"
                 + "    | || |__  | |_   | |_   \n"
@@ -41,7 +46,7 @@ public class Ui {
                 + " \\___/ |_____||_|    |_|    ";
         showLine();
         showMessage(banner);
-        showMessage(formatGreeting());
+        showMessage(greeting);
         showLine();
     }
 

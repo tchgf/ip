@@ -31,6 +31,17 @@ public class EventTest {
     }
 
     @Test
+    public void constructor_fromAfterTo_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Event("trip", "2019-11-05", "2019-11-01"));
+    }
+
+    @Test
+    public void constructor_fromEqualsTo_isAllowed() {
+        Event event = new Event("trip", "2019-11-01", "2019-11-01");
+        assertEquals(LocalDate.of(2019, 11, 1), event.getChronologicalDate().orElseThrow());
+    }
+
+    @Test
     public void toString_validDates_printsBothInMmmDdYyyyFormat() {
         Event event = new Event("trip", "2019-11-01", "2019-11-05");
         assertEquals("[E][ ] trip (from: Nov 01 2019 to: Nov 05 2019)", event.toString());

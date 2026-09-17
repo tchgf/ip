@@ -22,6 +22,12 @@ public class Task {
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("The description of a task cannot be empty.");
         }
+        // toSaveFormat()/Storage#parseLine round-trip tasks through a "|"-delimited save
+        // file, so a description containing "|" would silently corrupt that file (and be
+        // misread, or dropped, the next time it loads) instead of failing loudly here.
+        if (description.contains("|")) {
+            throw new IllegalArgumentException("A task description cannot contain the '|' character.");
+        }
         this.description = description;
         this.isDone = false;
     }

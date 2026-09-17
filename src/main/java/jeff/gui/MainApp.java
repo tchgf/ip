@@ -45,7 +45,7 @@ public class MainApp extends Application {
     public void start(Stage stage) {
         VBox dialogContainer = new VBox(SPACING);
         dialogContainer.setPadding(new Insets(SPACING));
-        dialogContainer.getChildren().add(DialogBox.getReplyDialog(Jeff.getWelcomeMessage(), jeffImage));
+        dialogContainer.getChildren().add(buildReplyDialog(Jeff.getWelcomeMessage()));
 
         ScrollPane scrollPane = new ScrollPane(dialogContainer);
         scrollPane.setFitToWidth(true);
@@ -109,15 +109,24 @@ public class MainApp extends Application {
             return;
         }
 
-        String response = Jeff.getResponse(text);
-        DialogBox replyDialog = response.contains(ERROR_MARKER)
-                ? DialogBox.getErrorDialog(response, jeffImage)
-                : DialogBox.getReplyDialog(response, jeffImage);
-        dialogContainer.getChildren().addAll(DialogBox.getUserDialog(text, userImage), replyDialog);
+        dialogContainer.getChildren().addAll(
+                DialogBox.getUserDialog(text, userImage), buildReplyDialog(Jeff.getResponse(text)));
         input.clear();
 
         if (Parser.parseCommandType(text) == Parser.Command.BYE) {
             Platform.exit();
         }
+    }
+
+    /**
+     * Wraps one of Jeff's replies (including the initial welcome message) in a dialog
+     * row, using the error style whenever the reply reports a problem (see
+     * {@link jeff.ui.Ui#formatError(String)}) so it catches the user's eye the same way
+     * regardless of where in the conversation it appears.
+     */
+    private DialogBox buildReplyDialog(String response) {
+        return response.contains(ERROR_MARKER)
+                ? DialogBox.getErrorDialog(response, jeffImage)
+                : DialogBox.getReplyDialog(response, jeffImage);
     }
 }

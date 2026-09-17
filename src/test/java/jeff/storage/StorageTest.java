@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,6 +25,7 @@ public class StorageTest {
     public void load_fileDoesNotExist_returnsEmptyList() {
         Storage storage = new Storage(tempDir.resolve("jeff.txt").toString());
         assertEquals(List.of(), storage.load());
+        assertEquals(Optional.empty(), storage.getLastLoadWarning());
     }
 
     @Test
@@ -37,9 +39,10 @@ public class StorageTest {
                 new Event("trip", "2019-11-01", "2019-11-05"));
         original.get(0).markAsDone();
 
-        storage.save(original);
+        Optional<String> saveError = storage.save(original);
         List<Task> loaded = new Storage(file.toString()).load();
 
+        assertEquals(Optional.empty(), saveError);
         assertEquals(original.size(), loaded.size());
         for (int i = 0; i < original.size(); i++) {
             assertEquals(original.get(i).toSaveFormat(), loaded.get(i).toSaveFormat());
@@ -57,7 +60,7 @@ public class StorageTest {
     }
 
     @Test
-    public void load_lineWithUnrecognizedTypeLetter_isSkipped() throws IOException {
+    public void load_lineWithUnrecognizedTypeLetter_isSkippedAndWarningIsSet() throws IOException {
         Path file = tempDir.resolve("jeff.txt");
         Files.writeString(file, "X | 0 | not a real type\nT | 0 | read book\n");
         Storage storage = new Storage(file.toString());
@@ -66,6 +69,7 @@ public class StorageTest {
 
         assertEquals(1, loaded.size());
         assertEquals("T | 0 | read book", loaded.get(0).toSaveFormat());
+        assertTrue(storage.getLastLoadWarning().isPresent());
     }
 
     @Test
@@ -78,5 +82,6 @@ public class StorageTest {
 
         assertEquals(1, loaded.size());
         assertEquals("T | 1 | write essay", loaded.get(0).toSaveFormat());
+        assertTrue(storage.getLastLoadWarning().isPresent());
     }
 }

@@ -15,6 +15,11 @@ public class TaskTest {
     }
 
     @Test
+    public void constructor_descriptionContainsPipe_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Task("buy milk | eggs"));
+    }
+
+    @Test
     public void getDescription_returnsDescriptionPassedToConstructor() {
         Task task = new Task("read book");
         assertEquals("read book", task.getDescription());

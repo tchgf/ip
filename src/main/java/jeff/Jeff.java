@@ -1,5 +1,6 @@
 package jeff;
 
+import java.util.Optional;
 import java.util.function.IntFunction;
 
 import jeff.parser.Parser;
@@ -36,8 +37,18 @@ public class Jeff {
     private static String addTask(Task task) {
         taskList.add(task);
         String response = ui.formatTaskAdded(task, taskList.size());
-        storage.save(taskList.getTasks());
-        return response;
+        return withSaveWarning(response);
+    }
+
+    /**
+     * Saves {@code taskList} to disk and, if that fails (e.g. the disk is full or its
+     * permissions changed), appends a warning to {@code response} so the user finds out
+     * their change was not actually persisted instead of it only reaching a console
+     * nobody may be looking at (e.g. when running the GUI).
+     */
+    private static String withSaveWarning(String response) {
+        Optional<String> saveError = storage.save(taskList.getTasks());
+        return saveError.map(error -> response + "\n" + ui.formatError(error)).orElse(response);
     }
 
     /**
@@ -58,9 +69,17 @@ public class Jeff {
         }
     }
 
-    /** Returns the greeting message shown when Jeff starts up, without the console's ASCII banner. */
+    /**
+     * Returns the greeting message shown when Jeff starts up, without the console's
+     * ASCII banner. If {@code storage} had trouble loading the saved tasks (e.g. the
+     * file was unreadable, or some of its lines were corrupted), a warning about that
+     * is appended so the user isn't left wondering where their tasks went.
+     */
     public static String getWelcomeMessage() {
-        return ui.formatGreeting();
+        String greeting = ui.formatGreeting();
+        return storage.getLastLoadWarning()
+                .map(warning -> greeting + "\n" + ui.formatError(warning))
+                .orElse(greeting);
     }
 
     /**
@@ -106,9 +125,7 @@ public class Jeff {
         return executeTaskCommand(arguments, "mark", index -> {
             Task task = taskList.get(index);
             task.markAsDone();
-            String response = ui.formatTaskMarked(task);
-            storage.save(taskList.getTasks());
-            return response;
+            return withSaveWarning(ui.formatTaskMarked(task));
         });
     }
 
@@ -117,9 +134,7 @@ public class Jeff {
         return executeTaskCommand(arguments, "unmark", index -> {
             Task task = taskList.get(index);
             task.unmarkAsDone();
-            String response = ui.formatTaskUnmarked(task);
-            storage.save(taskList.getTasks());
-            return response;
+            return withSaveWarning(ui.formatTaskUnmarked(task));
         });
     }
 
@@ -127,9 +142,7 @@ public class Jeff {
     private static String handleDelete(String arguments) {
         return executeTaskCommand(arguments, "delete", index -> {
             Task task = taskList.remove(index);
-            String response = ui.formatTaskRemoved(task, taskList.size());
-            storage.save(taskList.getTasks());
-            return response;
+            return withSaveWarning(ui.formatTaskRemoved(task, taskList.size()));
         });
     }
 
@@ -177,8 +190,7 @@ public class Jeff {
     /** Sorts {@code taskList} chronologically by date and returns the resulting list. */
     private static String handleSort() {
         taskList.sortByDate();
-        storage.save(taskList.getTasks());
-        return ui.formatSortedTasks(taskList.getTasks());
+        return withSaveWarning(ui.formatSortedTasks(taskList.getTasks()));
     }
 
     /**
@@ -188,7 +200,7 @@ public class Jeff {
      * @param args unused; Jeff takes no command-line arguments.
      */
     public static void main(String[] args) {
-        ui.showWelcome();
+        ui.showWelcome(getWelcomeMessage());
 
         while (true) {
             String input = ui.readCommand();

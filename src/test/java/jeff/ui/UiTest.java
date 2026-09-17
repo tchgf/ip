@@ -55,9 +55,9 @@ public class UiTest {
     }
 
     @Test
-    public void showWelcome_printsGreeting() {
-        new Ui().showWelcome();
-        assertTrue(output().contains("Hello! I'm Jeff"));
+    public void showWelcome_printsGivenGreeting() {
+        new Ui().showWelcome("Hello! I'm Jeff. What can I do for you today?");
+        assertTrue(output().contains("Hello! I'm Jeff."));
         assertTrue(output().contains("What can I do for you today?"));
     }
 
