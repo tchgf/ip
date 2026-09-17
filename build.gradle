@@ -24,13 +24,49 @@ repositories {
     mavenCentral()
 }
 
+// Every platform's JavaFX native libraries, so shadowJar (see below) can bundle them
+// all into one cross-platform fat jar, instead of only the one Gradle happened to run
+// on. The 'javafx' block above already resolves the *current* platform's javafx onto
+// the normal runtime classpath, which is all the local run/runGui/test tasks need.
+//
+// A single Configuration can't hold more than one platform classifier of the same
+// module (org.openjfx publishes them as alternatives for the same capability, so
+// Gradle rejects asking for two at once), so this creates one configuration per
+// platform instead - each resolves cleanly on its own - purely to feed shadowJar.
+//
+// JavaFX 21.0.7 publishes four platform classifiers: win, mac, mac-aarch64, and linux
+// (no linux-aarch64 for this version). "mac" (Intel) is deliberately left out: its
+// native libraries (e.g. libglass.dylib) share the exact same path inside the jar as
+// mac-aarch64's, so shadowJar can only keep one - and Apple has sold Apple Silicon
+// Macs exclusively since 2023, so mac-aarch64 covers far more current machines.
+List<String> javafxPlatforms = ['win', 'mac-aarch64', 'linux']
+Map<String, Configuration> javafxPlatformConfigurations = javafxPlatforms.collectEntries { platform ->
+    String configurationName = 'javafx' + platform.split('-').collect { it.capitalize() }.join('')
+    [(platform): configurations.create(configurationName)]
+}
+
 dependencies {
     String jUnitVersion = '5.14.4'
+    String javafxVersion = '21.0.7'
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
+
+    javafxPlatforms.each { platform ->
+        String configurationName = javafxPlatformConfigurations[platform].name
+        ['javafx-base', 'javafx-graphics', 'javafx-controls'].each { module ->
+            // transitive = false: each module is added explicitly below anyway, and
+            // without this, resolving e.g. javafx-controls would also try to resolve
+            // its transitive dependency on javafx-graphics *without* a platform
+            // classifier attached, which is ambiguous once more than one platform's
+            // artifacts are candidates.
+            add(configurationName, "org.openjfx:${module}:${javafxVersion}:${platform}") {
+                transitive = false
+            }
+        }
+    }
 }
 
 test {
@@ -60,6 +96,15 @@ jar {
 
 shadowJar {
     archiveFileName = 'jeff.jar'
+    configurations = [project.configurations.runtimeClasspath] + javafxPlatformConfigurations.values()
+    // The distributable jar launches the GUI by default (its whole point is being
+    // double-clickable on any machine with Java 25), unlike the 'application' plugin's
+    // mainClass above, which './gradlew run' uses to launch the console version. The
+    // console version is still reachable from the jar via
+    // `java -cp jeff.jar jeff.Jeff`.
+    manifest {
+        attributes 'Main-Class': 'jeff.gui.Main'
+    }
 }
 
 run {
