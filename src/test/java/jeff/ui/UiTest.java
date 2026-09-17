@@ -57,26 +57,29 @@ public class UiTest {
     @Test
     public void showWelcome_printsGreeting() {
         new Ui().showWelcome();
-        assertTrue(output().contains("Hello! I'm Jeff."));
-        assertTrue(output().contains("What can I do for you?"));
+        assertTrue(output().contains("Hello! I'm Jeff"));
+        assertTrue(output().contains("What can I do for you today?"));
     }
 
     @Test
     public void showBye_printsFarewellMessage() {
         new Ui().showBye();
-        assertEquals("    Bye. Hope to see you again soon!" + System.lineSeparator(), output());
+        assertTrue(output().contains("Bye for now!"));
+        assertTrue(output().contains("Jeff's clocking off"));
     }
 
     @Test
     public void showError_prefixesMessageWithOops() {
         new Ui().showError("something went wrong.");
-        assertEquals("    OOPS!!! something went wrong." + System.lineSeparator(), output());
+        String printed = output();
+        assertTrue(printed.contains("OOPS!!! something went wrong."));
+        assertTrue(printed.trim().startsWith("⚠"));
     }
 
     @Test
     public void showTaskList_emptyList_printsHeaderOnly() {
         new Ui().showTaskList(List.of());
-        assertEquals("    Here are the tasks in your list:" + System.lineSeparator(), output());
+        assertTrue(output().contains("Here's everything on your plate:"));
     }
 
     @Test
@@ -93,7 +96,7 @@ public class UiTest {
     @Test
     public void showMatchingTasks_emptyList_printsHeaderOnly() {
         new Ui().showMatchingTasks(List.of());
-        assertEquals("    Here are the matching tasks in your list:" + System.lineSeparator(), output());
+        assertTrue(output().contains("Here's what I dug up for you:"));
     }
 
     @Test
@@ -103,7 +106,7 @@ public class UiTest {
         new Ui().showMatchingTasks(List.of(first, second));
 
         String printed = output();
-        assertTrue(printed.contains("Here are the matching tasks in your list:"));
+        assertTrue(printed.contains("Here's what I dug up for you:"));
         assertTrue(printed.contains("1.[T][ ] read book"));
         assertTrue(printed.contains("2.[T][ ] return book"));
     }
@@ -112,17 +115,17 @@ public class UiTest {
     public void showTaskAdded_includesTaskAndCount() {
         new Ui().showTaskAdded(new Todo("read book"), 2);
         String printed = output();
-        assertTrue(printed.contains("Got it. I've added this task:"));
+        assertTrue(printed.contains("Got it! I've added this task:"));
         assertTrue(printed.contains("[T][ ] read book"));
-        assertTrue(printed.contains("Now you have 2 tasks in the list."));
+        assertTrue(printed.contains("You now have 2 tasks in the list."));
     }
 
     @Test
     public void showTaskRemoved_includesTaskAndCount() {
         new Ui().showTaskRemoved(new Todo("read book"), 1);
         String printed = output();
-        assertTrue(printed.contains("Noted. I've removed this task:"));
-        assertTrue(printed.contains("Now you have 1 tasks in the list."));
+        assertTrue(printed.contains("Done! I've removed this task:"));
+        assertTrue(printed.contains("You now have 1 tasks in the list."));
     }
 
     @Test

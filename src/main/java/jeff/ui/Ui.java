@@ -47,7 +47,7 @@ public class Ui {
 
     /** Builds the greeting shown when Jeff starts up, without the ASCII banner. */
     public String formatGreeting() {
-        return "Hello! I'm Jeff.\nWhat can I do for you?";
+        return "☺ Hello! I'm Jeff, your friendly task-tracking sidekick.\nWhat can I do for you today?";
     }
 
     /** Prints the farewell message. */
@@ -57,7 +57,7 @@ public class Ui {
 
     /** Builds the farewell message. */
     public String formatBye() {
-        return "Bye. Hope to see you again soon!";
+        return "✌ Bye for now! Jeff's clocking off - hope to see you again soon!";
     }
 
     /** Prints an error message, prefixed the same way for every kind of failure. */
@@ -65,9 +65,13 @@ public class Ui {
         showMessage(formatError(message));
     }
 
-    /** Builds an error message, prefixed the same way for every kind of failure. */
+    /**
+     * Builds an error message, prefixed the same way for every kind of failure so
+     * that both the console and the GUI (see {@code jeff.gui.MainApp}) can reliably
+     * recognize an error reply just by checking for the {@code "OOPS!!!"} text.
+     */
     public String formatError(String message) {
-        return "OOPS!!! " + message;
+        return "⚠ OOPS!!! " + message + " Let's give that another shot!";
     }
 
     /** Prints every given task as a numbered list, in order. */
@@ -77,7 +81,7 @@ public class Ui {
 
     /** Builds the numbered list of every given task, in order. */
     public String formatTaskList(List<Task> tasks) {
-        return formatNumberedTasks("Here are the tasks in your list:", tasks);
+        return formatNumberedTasks("☰ Here's everything on your plate:", tasks);
     }
 
     /** Prints every given task that matched a "find" search, numbered in order. */
@@ -87,7 +91,7 @@ public class Ui {
 
     /** Builds the numbered list of every given task that matched a "find" search, in order. */
     public String formatMatchingTasks(List<Task> tasks) {
-        return formatNumberedTasks("Here are the matching tasks in your list:", tasks);
+        return formatNumberedTasks("★ Here's what I dug up for you:", tasks);
     }
 
     /** Prints every given task, numbered in order, after a "sort" command reordered them. */
@@ -97,7 +101,7 @@ public class Ui {
 
     /** Builds the numbered list of every given task, in order, after a "sort" command reordered them. */
     public String formatSortedTasks(List<Task> tasks) {
-        return formatNumberedTasks("Sorted your tasks chronologically by date:", tasks);
+        return formatNumberedTasks("↕ All tidied up and sorted chronologically by date:", tasks);
     }
 
     /** Builds the given header followed by each task, numbered from 1 in the given order. */
@@ -115,7 +119,8 @@ public class Ui {
 
     /** Builds confirmation that a task was added, e.g. after a "todo"/"deadline"/"event" command. */
     public String formatTaskAdded(Task task, int taskCount) {
-        return "Got it. I've added this task:\n  " + task + "\nNow you have " + taskCount + " tasks in the list.";
+        return "✚ Got it! I've added this task:\n  " + task + "\nYou now have " + taskCount
+                + " tasks in the list. Let's keep the momentum going!";
     }
 
     /** Prints confirmation that a task was removed, e.g. after a "delete" command. */
@@ -125,7 +130,8 @@ public class Ui {
 
     /** Builds confirmation that a task was removed, e.g. after a "delete" command. */
     public String formatTaskRemoved(Task task, int taskCount) {
-        return "Noted. I've removed this task:\n  " + task + "\nNow you have " + taskCount + " tasks in the list.";
+        return "✖ Done! I've removed this task:\n  " + task + "\nYou now have " + taskCount
+                + " tasks in the list. One less thing to worry about!";
     }
 
     /** Prints confirmation that a task was marked done. */
@@ -135,7 +141,7 @@ public class Ui {
 
     /** Builds confirmation that a task was marked done. */
     public String formatTaskMarked(Task task) {
-        return "Nice! I've marked this task as done:\n  " + task;
+        return "✓ Nice work! I've marked this task as done:\n  " + task + "\nAnother one bites the dust!";
     }
 
     /** Prints confirmation that a task was marked not done. */
@@ -145,7 +151,7 @@ public class Ui {
 
     /** Builds confirmation that a task was marked not done. */
     public String formatTaskUnmarked(Task task) {
-        return "OK, I've marked this task as not done yet:\n  " + task;
+        return "↺ No worries! I've marked this task as not done yet:\n  " + task + "\nYou'll get to it!";
     }
 
     /** Reads one line of user input, or {@code null} if there is no more input (e.g. end of stream). */
